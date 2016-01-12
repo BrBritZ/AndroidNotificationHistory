@@ -3,9 +3,6 @@ package com.project.level4.watchnotificationtray;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,32 +13,21 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.NodeApi;
-import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     GoogleApiClient googleClient;
     NotificationObject notification;
-    boolean connectionFlag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//         setContentView(R.layout.activity_main);
-
-        connectionFlag = false;
+        setContentView(R.layout.activity_main);
+        // layout should be a options screen
 
         LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, new IntentFilter("Msg"));
         // Build a new GoogleApiClient
@@ -87,22 +73,11 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
             notification = new NotificationObject(pack, title, text, icon, position);
 
 
-            if (connectionFlag) {
+            if (googleClient.isConnected()) {
                 String WEARABLE_DATA_PATH = "/wearable_data";
 
-                Bitmap bitmapIcon = notification.getIcon();
-
-                Asset asset = createAssetFromBitmap(notification.getIcon());
-
                 // Create a DataMap object and send it to the data layer
-                DataMap dataMap = new DataMap();
-
-                dataMap.putString("package", notification.getPackageName());
-                dataMap.putString("title", notification.getTitle());
-                dataMap.putString("text", notification.getText());
-                dataMap.putAsset("icon", asset);
-                dataMap.putLong("position", notification.getPosition());
-                //Requires a new thread to avoid blocking the UI
+                DataMap dataMap = notification.putToDataMap();
                 new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
             }
         }
@@ -119,8 +94,6 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        connectionFlag = true;
-
         //if notificationObject is not null.. send it.
     }
 
@@ -136,17 +109,9 @@ public class MainActivity extends Activity implements GoogleApiClient.Connection
     // Placeholders for required connection callbacks
     @Override
     public void onConnectionSuspended(int cause) {
-        connectionFlag = false;
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        connectionFlag = false;
-    }
-
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-        return Asset.createFromBytes(byteStream.toByteArray());
     }
 }

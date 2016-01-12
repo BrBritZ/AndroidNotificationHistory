@@ -5,7 +5,13 @@ package com.project.level4.watchnotificationtray;
  */
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WearableListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,32 +21,40 @@ import java.util.ArrayList;
 public class NotificationList extends Activity {
     private static ArrayList<Integer> mIcons;
     private TextView mHeader;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Sample icons for the list
-        mIcons = new ArrayList<Integer>();
-        mIcons.add(R.drawable.ic_action_attach);
-        mIcons.add(R.drawable.ic_action_call);
-        mIcons.add(R.drawable.ic_action_locate);
-        mIcons.add(R.drawable.ic_action_mail);
-        mIcons.add(R.drawable.ic_action_microphone);
-        mIcons.add(R.drawable.ic_action_photo);
-        mIcons.add(R.drawable.ic_action_star);
-        mIcons.add(R.drawable.ic_action_user);
-        mIcons.add(R.drawable.ic_action_video);
+        // Datalayer object
 
-        // This is our list header
-        mHeader = (TextView) findViewById(R.id.wearable_listview_header);
+        // Register the local broadcast receiver, defined in step 3.
+        IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
+        //trial context
+        context = this;
+        MessageReceiver messageReceiver = new MessageReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
+    }
 
-        WearableListView wearableListView =
-                (WearableListView) findViewById(R.id.wearable_listview_container);
-        wearableListView.setAdapter(new WearableAdapter(this, mIcons));
-        wearableListView.setClickListener(mClickListener);
-        wearableListView.addOnScrollListener(mOnScrollListener);
+    public class MessageReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String title = intent.getStringExtra("title");
+            String text = intent.getStringExtra("text");
+
+            // Display message in UI
+
+            // This is our list header
+            mHeader = (TextView) findViewById(R.id.wearable_listview_header);
+
+            WearableListView wearableListView =
+                    (WearableListView) findViewById(R.id.wearable_listview_container);
+            wearableListView.setAdapter(new WearableAdapter(context, title, text));
+            wearableListView.setClickListener(mClickListener);
+            wearableListView.addOnScrollListener(mOnScrollListener);
+        }
     }
 
     // Handle our Wearable List's click events
