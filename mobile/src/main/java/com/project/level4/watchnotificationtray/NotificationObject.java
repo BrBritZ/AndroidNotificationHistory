@@ -22,14 +22,6 @@ public class NotificationObject {
     Bitmap icon;
     long position;
 
-    public NotificationObject(){
-        this.pack = null;
-        this.title = null;
-        this.text = null;
-        this.icon = null;
-        this.position = 0;
-    }
-
     public NotificationObject(String pack, String title, String text, Bitmap icon, long position) {
         this.pack = pack;
         this.title = title;
@@ -58,15 +50,6 @@ public class NotificationObject {
         return this.position;
     }
 
-    public NotificationObject(DataMap map, GoogleApiClient mGoogleApiClient) {
-        this.pack = map.getString("package");
-        this.title = map.getString("title");
-        this.text = map.getString("text");
-        this.icon = getBitmapFromAsset(map.getAsset("icon"), mGoogleApiClient);
-        this.position = map.getLong("position");
-
-    }
-
     public DataMap putToDataMap() {
         DataMap map = new DataMap();
 
@@ -74,8 +57,7 @@ public class NotificationObject {
         map.putString("title", title);
         map.putString("text", text);
         map.putLong("position", position);
-        Asset asset = createAssetFromBitmap(icon);
-        map.putAsset("icon", asset);
+        map.putAsset("icon", createAssetFromBitmap(icon));
 
         return map;
     }
@@ -85,24 +67,4 @@ public class NotificationObject {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
         return Asset.createFromBytes(byteStream.toByteArray());
     }
-
-
-    private Bitmap getBitmapFromAsset(Asset asset, GoogleApiClient mGoogleApiClient) {
-        if (asset == null) {
-            throw new IllegalArgumentException("Asset must be non-null");
-        }
-
-        // convert asset into a file descriptor and block until it's ready
-        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
-                mGoogleApiClient, asset).await().getInputStream();
-        mGoogleApiClient.disconnect();
-
-        if (assetInputStream == null) {
-            Log.w("NotificationObject", "Requested an unknown Asset.");
-            return null;
-        }
-        // decode the stream into a bitmap
-        return BitmapFactory.decodeStream(assetInputStream);
-    }
-
 }

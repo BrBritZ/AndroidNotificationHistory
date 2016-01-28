@@ -10,32 +10,33 @@ import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 /**
- * Created by Rob on 08/01/2016.
+ * Created by Rob on 28/01/2016.
  */
 class SendToDataLayerThread extends Thread {
     String path;
     DataMap dataMap;
-    GoogleApiClient googleClient;
+    GoogleApiClient mGoogleApiClient;
 
     // Constructor for sending data objects to the data layer
     SendToDataLayerThread(String p, DataMap data, GoogleApiClient googleClient) {
         this.path = p;
         this.dataMap = data;
-        this.googleClient = googleClient;
+        this.mGoogleApiClient = googleClient;
     }
 
     public void run() {
+        System.out.println("starting thread...");
         // Construct a DataRequest and send over the data layer
         PutDataMapRequest putDMR = PutDataMapRequest.create(path);
         putDMR.getDataMap().putAll(dataMap);
         PutDataRequest request = putDMR.asPutDataRequest();
-        DataApi.DataItemResult result = Wearable.DataApi.putDataItem(googleClient, request).await();
+        DataApi.DataItemResult result = Wearable.DataApi.putDataItem(mGoogleApiClient, request).await();
         if (result.getStatus().isSuccess()) {
-            Log.v("myTag", "DataMap: " + dataMap + " sent successfully to data layer ");
+            Log.v("SendToDataLayerThread", "DataMap: " + dataMap + " sent successfully to data layer ");
         }
         else {
             // Log an error
-            Log.v("myTag", "ERROR: failed to send DataMap to data layer");
+            Log.v("SendToDataLayerThread", "ERROR: failed to send DataMap to data layer");
         }
     }
 }
