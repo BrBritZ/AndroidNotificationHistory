@@ -11,8 +11,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.wearable.view.WatchViewStub;
 import android.support.wearable.view.WearableListView;
 import android.util.Log;
 import android.widget.TextView;
@@ -26,58 +29,147 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 public class WearMainActivity extends Activity {
     private TextView mHeader;
-    private static final int TIMEOUT_MS = 50;
+    private static final int TIMEOUT_MS = 100;
 
-    private NotificationObject notificationObject;
+    private LinkedList<NotificationObject> notificationLL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Could stub layout when not connected to mobile here
+        notificationLL = new LinkedList<NotificationObject>();
 
+        if (savedInstanceState != null && (savedInstanceState.getSerializable("NotificationLinkedList") != null)) {
+            notificationLL = (LinkedList<NotificationObject>) savedInstanceState.getSerializable("NotificationLinkedList");
+        } else {
+            NotificationObject defaultObject = new NotificationObject();
+            defaultObject.setTitle(getResources().getString(R.string.notification_default_value));
+            notificationLL.add(defaultObject);
+            mHeader = (TextView) findViewById(R.id.wearable_listview_header);
+            WearableListView wearableListView =
+                    (WearableListView) findViewById(R.id.wearable_listview_container);
+            System.out.println("setting up default view");
+            wearableListView.setAdapter(new WearableAdapter(this, notificationLL));
 
+            wearableListView.setClickListener(mClickListener);
+            wearableListView.addOnScrollListener(mOnScrollListener);
+        }
         // Register the local broadcast receiver
         IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
         MessageReceiver messageReceiver = new MessageReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        Bundle saveBundle = new Bundle();
+        saveBundle.putSerializable("NotificationLinkedList", notificationLL);
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putSerializable("NotificationLinkedList", notificationLL);
+    }
+
     public class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            System.out.println("Received a message in WEAR");
+
+            // remove default message for empty notifcation history
+            removeEmptyNotifcationLLValues();
 
             Bundle data = intent.getBundleExtra("datamap");
-            // create notification object from DataMap
+            DataMap dataMap = DataMap.fromBundle(data);
+            NotificationObject notificationObject = null;
 
+            System.out.println("Got DataMap");
 
-            NotificationObject notificationObject = new NotificationObject(
-                   data.getString("pack"),
-                    data.getString("title"),
-                    data.getString("text"),
-                    getBitmapFromAsset((Asset)data.get("icon")),
-                    data.getLong("position")
-                    );
-            Log.i("HERE ", notificationObject.getTitle());
-            Log.i("HERE ", notificationObject.getText());
+            System.out.println("package: "+ dataMap.getString("package"));
+            System.out.println("title: "+dataMap.getString("title"));
+            System.out.println("text: "+dataMap.getString("text"));
+            if (dataMap != null){
+                // create notification object from DataMap
+                notificationObject = new NotificationObject();
 
-            // Display message in UI
+                if (dataMap.getString("package") != null) {
+                    notificationObject.setPack(dataMap.getString("package"));
+                }
+                if (dataMap.getString("title") != null) {
+                    notificationObject.setTitle(dataMap.getString("title"));
+                }
+                if (dataMap.getString("text") != null) {
+                    notificationObject.setText(dataMap.getString("text"));
+                }
+
+                if (dataMap.getAsset("icon") != null) {
+                    Drawable drawableIcon = new BitmapDrawable(getResources(), getBitmapFromAsset((Asset) dataMap.get("icon")));
+                    notificationObject.setIcon(drawableIcon);
+                }
+                Log.i("WearMainActivity", "NotificationObject created");
+            }
+
+            System.out.println("Created NotificationObject");
+
+            if (notificationObject != null){
+                notificationLL.add(notificationObject);
+            }
+
+            System.out.println("Added notification to linked list");
+
             // This is our list header
-            mHeader = (TextView) findViewById(R.id.wearable_listview_header);
+            updateUI();
+        }
+    }
 
-            WearableListView wearableListView =
-                    (WearableListView) findViewById(R.id.wearable_listview_container);
-            wearableListView.setAdapter(
-                    new WearableAdapter(context,
-                    notificationObject.getTitle(),
-                    notificationObject.getText()));
-            wearableListView.setClickListener(mClickListener);
-            wearableListView.addOnScrollListener(mOnScrollListener);
+    private void updateUI(){
+        System.out.println("Updating User Interface!");
+        mHeader = (TextView) findViewById(R.id.wearable_listview_header);
+        WearableListView wearableListView =
+                (WearableListView) findViewById(R.id.wearable_listview_container);
+        System.out.println("got first notification from linked list");
+        wearableListView.setAdapter(new WearableAdapter(this, notificationLL));
+
+        wearableListView.setClickListener(mClickListener);
+        wearableListView.addOnScrollListener(mOnScrollListener);
+        System.out.println("Set adapter for view");
+    }
+
+    public void removeEmptyNotifcationLLValues(){
+        if (!notificationLL.isEmpty() || notificationLL != null) {
+            NotificationObject notification = notificationLL.get(0);
+            if (notification.getTitle().equals(getResources().getString(R.string.notification_default_value))) {
+                notificationLL.remove(0);
+            }
         }
     }
 

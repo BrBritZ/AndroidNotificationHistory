@@ -20,7 +20,9 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:dividerHeight="0dp"
-            android:scrollbars="none">
+            android:scrollbars="none"
+            android:stackFromBottom="true"
+            android:transcriptMode="normal">
         </android.support.wearable.view.WearableListView>
 
         <TextView
@@ -29,9 +31,11 @@
             android:layout_height="60dp"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
+            android:paddingTop="24dp"
             android:fontFamily="sans-serif-light"
-            android:gravity="bottom"
-            android:textSize="20sp" />
+            android:gravity="center_horizontal"
+            android:textSize="16sp"
+            android:text="@string/notifications_title"/>
 
     </RelativeLayout>
 </android.support.wearable.view.BoxInsetLayout>

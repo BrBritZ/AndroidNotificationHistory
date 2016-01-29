@@ -4,5 +4,6 @@
     <string name="hello_square">Hello Square World!</string>
     <string name="my_analog_name">My Analog</string>
 
-    <string name="notifications_title">Notifications</string>
+    <string name="notifications_title">Notification History</string>
+    <string name="notification_default_value">Empty</string>
 </resources>

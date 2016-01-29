@@ -2,6 +2,7 @@ package com.project.level4.watchnotificationtray;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -11,23 +12,26 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.Serializable;
 
 /**
  * Created by Rob on 08/01/2016.
  */
-public class NotificationObject {
-    String pack;
-    String title;
-    String text;
-    Bitmap icon;
-    long position;
+public class NotificationObject implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String pack;
+    private String title;
+    private String text;
+    private Drawable icon;
 
-    public NotificationObject(String pack, String title, String text, Bitmap icon, long position) {
-        this.pack = pack;
-        this.title = title;
-        this.text = text;
-        this.icon = icon;
-        this.position = position;
+
+    public NotificationObject() {
+        this.pack = null;
+        this.title = null;
+        this.text = null;
+        this.icon = null;
+
+
     }
 
     public String getPackageName(){
@@ -42,30 +46,25 @@ public class NotificationObject {
         return this.text;
     }
 
-    public Bitmap getIcon(){
+    public Drawable getIcon(){
         return this.icon;
     }
 
-    public long getPosition(){
-        return this.position;
+    public void setPack(String pack) {
+        this.pack = pack;
     }
 
-    public DataMap putToDataMap() {
-        DataMap map = new DataMap();
-
-        map.putString("package", pack);
-        map.putString("title", title);
-        map.putString("text", text);
-        map.putLong("position", position);
-        Asset asset = createAssetFromBitmap(icon);
-        map.putAsset("icon", asset);
-
-        return map;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-        return Asset.createFromBytes(byteStream.toByteArray());
+    public void setText(String text) {
+        this.text = text;
     }
+
+    public void setIcon(Drawable icon) {
+        this.icon = icon;
+    }
+
 }
+
