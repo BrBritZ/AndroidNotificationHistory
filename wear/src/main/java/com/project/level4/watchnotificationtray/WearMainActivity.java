@@ -17,7 +17,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WearableListView;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -43,6 +42,7 @@ public class WearMainActivity extends Activity {
 
     private MessageReceiver messageReceiver;
     private LinkedList<NotificationObject> notificationLL;
+    private long counter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +63,9 @@ public class WearMainActivity extends Activity {
             WearableListView wearableListView =
                     (WearableListView) findViewById(R.id.wearable_listview_container);
             System.out.println("setting up default view");
-            wearableListView.setAdapter(new WearableAdapter(this, notificationLL));
-
-            wearableListView.setClickListener(mClickListener);
+            wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
+            wearableListView.setOverScrollMode(0);
+            wearableListView.setOverScrollListener(mOverScrollListener);
             wearableListView.addOnScrollListener(mOnScrollListener);
         }
 
@@ -204,6 +204,16 @@ public class WearMainActivity extends Activity {
         }
     }
 
+    public class CounterReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ACTIONCOUNTER.equals(intent.getAction())) {
+                counter = intent.getLongExtra("counter", 0);
+            }
+        }
+    }
+
+
     private void updateUI(){
         System.out.println("Updating User Interface!");
         mHeader = (TextView) findViewById(R.id.wearable_listview_header);
@@ -211,7 +221,8 @@ public class WearMainActivity extends Activity {
                 (WearableListView) findViewById(R.id.wearable_listview_container);
         System.out.println("got notification from linked list");
         wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
-        wearableListView.setClickListener(mClickListener);
+        wearableListView.setOverScrollMode(0);
+        wearableListView.setOverScrollListener(mOverScrollListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
         System.out.println("Set adapter for view");
 
@@ -269,27 +280,17 @@ public class WearMainActivity extends Activity {
         }.execute(notification);
     }
 
-    // Handle our Wearable List's click events
-    private WearableListView.ClickListener mClickListener =
-            new WearableListView.ClickListener() {
+    private WearableListView.OnOverScrollListener mOverScrollListener =
+            new  WearableListView.OnOverScrollListener() {
                 @Override
-                public void onClick(WearableListView.ViewHolder viewHolder) {
-                    Toast.makeText(WearMainActivity.this,
-                            String.format("You selected item #%s",
-                                    viewHolder.getLayoutPosition() + 1),
-                            Toast.LENGTH_SHORT).show();
+                public void onOverScroll() {
                     Intent counterIntent = new Intent();
                     counterIntent.setAction(ACTIONCOUNTER);
                     counterIntent.putExtra("counter", 0);
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(counterIntent);
                 }
-
-                @Override
-                public void onTopEmptyRegionClick() {
-                    Toast.makeText(WearMainActivity.this,
-                            "Top empty area tapped", Toast.LENGTH_SHORT).show();
-                }
             };
+
 
     // The following code ensures that the title scrolls as the user scrolls up
     // or down the list
