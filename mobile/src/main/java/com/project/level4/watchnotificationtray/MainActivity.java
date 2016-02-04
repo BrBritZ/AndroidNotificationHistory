@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -27,7 +28,7 @@ import java.io.ByteArrayOutputStream;
 
 
 public class MainActivity extends PreferenceActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     GoogleApiClient googleClient;
     private NotificationReceiver notificationreceiver;
@@ -42,6 +43,11 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment {
@@ -122,80 +128,6 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
     public void onConnectionFailed(ConnectionResult connectionResult) {
     }
 
-
-//    /*
-//    * Notification Service
-//    * */
-//    public class NotificationService extends NotificationListenerService {
-//        private String TAG = this.getClass().getSimpleName();
-//        private com.project.level4.watchnotificationtray.NotificationReceiver notificationReceiver;
-//
-//        @Override
-//        public void onCreate() {
-//            super.onCreate();
-//
-//            notificationReceiver = new com.project.level4.watchnotificationtray.NotificationReceiver();
-//            IntentFilter filter = new IntentFilter();
-//            filter.addAction("com.project.level4.watchnotificationtray.NOTIFICATION");
-//            registerReceiver(notificationReceiver, filter);
-//        }
-//
-//        @Override
-//        public void onDestroy() {
-//            unregisterReceiver(notificationReceiver);
-//            super.onDestroy();
-//        }
-//
-//
-//        @Override
-//        public void onNotificationPosted(StatusBarNotification sbn) {
-//            System.out.println("Received a notification");
-//            String pack = sbn.getPackageName();
-//            System.out.println("Package is: " + pack);
-//            Notification notification = sbn.getNotification();
-//
-////        String ticker = sbn.getNotification().tickerText.toString();
-//            Bundle extras = sbn.getNotification().extras;
-//            String title = extras.getString("android.title");
-//            System.out.println("Title is: " + title);
-//            String text = extras.getCharSequence("android.text").toString();
-//            System.out.println("Text is: " + text);
-//            Bitmap icon = notification.largeIcon;
-//            String iconID = String.valueOf(notification.extras.getInt(Notification.EXTRA_LARGE_ICON));
-//
-//            Log.i("Package", pack);
-//            Log.i("Title", title);
-//            Log.i("Text", text);
-//            Log.i("IconID", iconID);
-//
-//            Intent msgrcv = new Intent("com.project.level4.watchnotificationtray.NOTIFICATION");
-//            msgrcv.putExtra("package", pack);
-//            msgrcv.putExtra("title", title);
-//            msgrcv.putExtra("text", text);
-//
-//            // icon to byte array to pass into intent
-//            if (icon != null) {
-//                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-//                icon.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-//                msgrcv.putExtra("iconByteArray", byteStream.toByteArray());
-//            }
-//
-//            System.out.println("Broadcasting...");
-//            sendBroadcast(msgrcv);
-////        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(msgrcv);
-//        }
-//
-//        @Override
-//        public void onNotificationRemoved(StatusBarNotification sbn){
-//            Log.i(TAG, "********** onNotificationRemoved");
-//            Log.i(TAG, "ID :" + sbn.getId() + "t" + sbn.getNotification().tickerText + "t" + sbn.getPackageName());
-//            Intent i = new Intent("com.project.level4.watchnotificationtray.NOTIFICATION");
-//            i.putExtra("notification<em>event", "onNotificationRemoved :" + sbn.getPackageName() + "n");
-//            sendBroadcast(i);
-//        }
-//
-//    }
-
     /*
     * NotificationReceiver
     * */
@@ -213,12 +145,11 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
             String pack = intent.getStringExtra("package");
             String title = intent.getStringExtra("title");
             String text = intent.getStringExtra("text");
+            System.out.println(pack + '\n' + title + '\n' + text);
             Bitmap icon = null;
-            if (intent.getParcelableExtra("iconByteArray") != null) {
-                icon = BitmapFactory.decodeByteArray(
-                        intent.getByteArrayExtra("iconByteArray"),
-                        0,
-                        intent.getByteArrayExtra("byteArray").length);
+            if (intent.getByteArrayExtra("iconByteArray") != null) {
+                byte[] byteArray = intent.getByteArrayExtra("iconByteArray");
+                icon  = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
             }
 
 

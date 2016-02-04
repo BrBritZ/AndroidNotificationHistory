@@ -5,7 +5,6 @@ package com.project.level4.watchnotificationtray;
  */
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.CircledImageView;
@@ -15,15 +14,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class WearableAdapter extends WearableListView.Adapter {
-
+    private Context context;
     private final LayoutInflater mInflater;
     private LinkedList<NotificationObject> notificationLL;
 
+
     public WearableAdapter(Context context, LinkedList<NotificationObject> notificationLinkedList) {
+        this.context = context;
         this.mInflater = LayoutInflater.from(context);
         this.notificationLL = notificationLinkedList;
     }
@@ -37,18 +37,32 @@ public class WearableAdapter extends WearableListView.Adapter {
     @Override
     public void onBindViewHolder(WearableListView.ViewHolder viewHolder, int position) {
         System.out.println("trying to onBindViewHolder");
+        System.out.println("size: " + notificationLL.size());
         if (position < notificationLL.size()) {
             if (!notificationLL.isEmpty() && notificationLL != null) {
-                NotificationObject n0 = notificationLL.get(position);
+                NotificationObject notification = notificationLL.get(position);
                 ItemViewHolder itemViewHolder = (ItemViewHolder) viewHolder;
                 CircledImageView circledView = itemViewHolder.mCircledImageView;
-                if (n0.getIcon() != null){
-                    circledView.setImageDrawable(n0.getIcon());
+                if (notification.getIcon() != null){
+                    Drawable icon = new BitmapDrawable(context.getResources(), notification.getIcon());
+                    circledView.setImageDrawable(icon);
                 } else{
                     circledView.setImageResource(R.drawable.ic_action_mail);
                 }
                 TextView textView = itemViewHolder.mItemTextView;
-                textView.setText(n0.getTitle());
+                if (notification.getTitle() != null){
+                    if (notification.getTitle().length() > 15) {
+                        textView.setText(notification.getTitle().substring(0, Math.min(notification.getTitle().length(), 15)) + "...");
+                    } else {
+                        textView.setText(notification.getTitle());
+                    }
+                } else {
+                    if (notification.getText().length() > 15) {
+                        textView.setText(notification.getText().substring(0, Math.min(notification.getText().length(), 15)) + "...");
+                    } else {
+                        textView.setText(notification.getText());
+                    }
+                }
                 itemViewHolder.itemView.setTag(position);
                 System.out.println("Successfuly set onBindViewHolder");
             }

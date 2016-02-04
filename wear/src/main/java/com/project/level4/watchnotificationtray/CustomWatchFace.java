@@ -25,9 +25,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
@@ -53,6 +55,14 @@ public class CustomWatchFace extends CanvasWatchFaceService {
      */
     private static final int MSG_UPDATE_TIME = 0;
 
+    /**
+     * Stores the number of unread notifications
+     */
+    private long counter;
+
+    private Time mTime;
+
+
     @Override
     public Engine onCreateEngine() {
         return new Engine();
@@ -60,14 +70,15 @@ public class CustomWatchFace extends CanvasWatchFaceService {
 
     private class Engine extends CanvasWatchFaceService.Engine {
         // clockface drawing variables
-        Paint mHourPaint;
-        Paint mMinutePaint;
-        Paint mSecondPaint;
-        Paint mTickPaint;
-        Paint mBackgroundPaint;
+        private Paint mHourPaint;
+        private Paint mMinutePaint;
+        private Paint mSecondPaint;
+        private Paint mTickPaint;
+        private Paint mBackgroundPaint;
+        private boolean mAmbient;
 
-        boolean mAmbient;
-        Time mTime;
+        private static final String ACTION = "COUNTER";
+
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -76,7 +87,6 @@ public class CustomWatchFace extends CanvasWatchFaceService {
         boolean mLowBitAmbient;
         boolean mRegisteredTimeZoneReceiver = false;
 
-        String notification = "0";
         Paint notificationPaint;
 
         final Handler mUpdateTimeHandler = new EngineHandler(this);
@@ -84,21 +94,21 @@ public class CustomWatchFace extends CanvasWatchFaceService {
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                mTime.clear(intent.getStringExtra("time-zone"));
-                mTime.setToNow();
+                if(ACTION.equals(intent.getAction())) {
+                    updateCounterTask(intent);
+                }
             }
         };
 
-
-        private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver()
-        {
-            @Override
-            public void onReceive(Context arg0, Intent intent)
-            {
-                notification = "0";
-                        //String.valueOf(intent.getIntExtra(NOTIFICATION_SERVICE., 0) + "%");
-            }
-        };
+        public void updateCounterTask(Intent intent) {
+            new AsyncTask<Intent, Void, Void>() {
+                @Override
+                protected Void doInBackground(Intent... intent) {
+                    counter = intent[0].getLongExtra("counter", 0);
+                    return null;
+                }
+            }.execute(intent);
+        }
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -145,6 +155,10 @@ public class CustomWatchFace extends CanvasWatchFaceService {
             notificationPaint.setTextSize(29);
 
             mTime = new Time();
+
+            // Register the local broadcast receiver
+            IntentFilter messageFilter = new IntentFilter(ACTION);
+            LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mTimeZoneReceiver, messageFilter);
         }
 
         @Override
@@ -236,7 +250,7 @@ public class CustomWatchFace extends CanvasWatchFaceService {
                 canvas.drawLine(centerX + innerX, centerY + innerY, centerX + outerX, centerY + outerY, mTickPaint);
             }
 
-            canvas.drawText(notification,centerX+100f, centerY+5f, notificationPaint);
+            canvas.drawText(Long.toString(counter),centerX+100f, centerY+5f, notificationPaint);
         }
 
         @Override
@@ -249,8 +263,6 @@ public class CustomWatchFace extends CanvasWatchFaceService {
                 // Update time zone in case it changed while we weren't visible.
                 mTime.clear(TimeZone.getDefault().getID());
                 mTime.setToNow();
-            } else {
-                unregisterReceiver();
             }
 
             // Whether the timer should be running depends on whether we're visible (as well as

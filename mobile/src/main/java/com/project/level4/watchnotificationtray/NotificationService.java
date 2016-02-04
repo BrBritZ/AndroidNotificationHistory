@@ -3,10 +3,16 @@ package com.project.level4.watchnotificationtray;
 import android.app.Notification;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 
@@ -43,8 +49,15 @@ public class NotificationService extends NotificationListenerService {
        Bundle extras = sbn.getNotification().extras;
        String title = extras.getString("android.title");
        String text = extras.getCharSequence("android.text").toString();
-       Bitmap icon = notification.largeIcon;
-       String iconID = String.valueOf(notification.extras.getInt(Notification.EXTRA_LARGE_ICON));
+       Bitmap icon = null;
+       try {
+           Drawable d = getPackageManager().getApplicationIcon(pack);
+           icon = ((BitmapDrawable)d).getBitmap();
+       }
+       catch (PackageManager.NameNotFoundException e)
+       {
+           Log.w("OnNotificationPosted", "Cannot get icon from package");
+       }
 
        Intent msgrcv = new Intent("com.project.level4.watchnotificationtray.NOTIFICATION");
        msgrcv.putExtra("package", pack);
@@ -55,7 +68,8 @@ public class NotificationService extends NotificationListenerService {
        if (icon != null){
            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
            icon.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-           msgrcv.putExtra("iconByteArray", icon);
+           byte[] byteArray = byteStream.toByteArray();
+           msgrcv.putExtra("iconByteArray", byteArray);
        }
        System.out.println("Broadcasting...");
        sendBroadcast(msgrcv);

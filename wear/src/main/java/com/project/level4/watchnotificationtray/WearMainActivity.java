@@ -11,11 +11,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.wearable.view.WatchViewStub;
 import android.support.wearable.view.WearableListView;
 import android.util.Log;
 import android.widget.TextView;
@@ -23,20 +21,27 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.Wearable;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.LinkedList;
-import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 public class WearMainActivity extends Activity {
     private TextView mHeader;
-    private static final int TIMEOUT_MS = 100;
+    private static final int TIMEOUT_MS = 1000;
+    private static final String ACTION = "NOTIFICATION";
+    private static final String ACTIONCOUNTER = "COUNTER";
 
+    private MessageReceiver messageReceiver;
     private LinkedList<NotificationObject> notificationLL;
 
     @Override
@@ -46,8 +51,10 @@ public class WearMainActivity extends Activity {
 
         notificationLL = new LinkedList<NotificationObject>();
 
-        if (savedInstanceState != null && (savedInstanceState.getSerializable("NotificationLinkedList") != null)) {
-            notificationLL = (LinkedList<NotificationObject>) savedInstanceState.getSerializable("NotificationLinkedList");
+        readNotificationsFromInternalStorage();
+
+        if (!notificationLL.isEmpty()){
+            updateUI();
         } else {
             NotificationObject defaultObject = new NotificationObject();
             defaultObject.setTitle(getResources().getString(R.string.notification_default_value));
@@ -61,10 +68,12 @@ public class WearMainActivity extends Activity {
             wearableListView.setClickListener(mClickListener);
             wearableListView.addOnScrollListener(mOnScrollListener);
         }
+
         // Register the local broadcast receiver
-        IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
-        MessageReceiver messageReceiver = new MessageReceiver();
+        IntentFilter messageFilter = new IntentFilter(ACTION);
+        messageReceiver = new MessageReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
+
     }
 
     @Override
@@ -79,13 +88,16 @@ public class WearMainActivity extends Activity {
 
     @Override
     protected void onPause() {
-        Bundle saveBundle = new Bundle();
-        saveBundle.putSerializable("NotificationLinkedList", notificationLL);
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
+        writeNotificationsToInternalStorage();
+
+        // unregister receiver
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver);
+
         super.onDestroy();
     }
 
@@ -94,60 +106,101 @@ public class WearMainActivity extends Activity {
         super.onStop();
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle state) {
-        super.onSaveInstanceState(state);
-        state.putSerializable("NotificationLinkedList", notificationLL);
+    public void writeNotificationsToInternalStorage() {
+        FileOutputStream fileOut = null;
+        String fileName = getResources().getString(R.string.filename);
+        try {
+
+            fileOut = getApplicationContext().openFileOutput(
+                    fileName, Context.MODE_PRIVATE);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(notificationLL);
+            out.close();
+            fileOut.close();
+
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
     }
+
+    public void readNotificationsFromInternalStorage() {
+        FileInputStream fileIn = null;
+        String fileName = getResources().getString(R.string.filename);
+        LinkedList<NotificationObject> temp = new LinkedList<NotificationObject>();
+        try {
+            fileIn = getApplicationContext().openFileInput(fileName);
+            ObjectInputStream is = new ObjectInputStream(fileIn);
+            temp = (LinkedList<NotificationObject>)is.readObject();
+
+            if (temp != null){
+                notificationLL = temp;
+            }
+            is.close();
+        }
+        catch (FileNotFoundException e) {
+            Log.e("ReadingFile","File not found");
+        }
+        catch (StreamCorruptedException e) {
+            e.printStackTrace();
+
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+
+        }
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+
+        }
+
+    }
+
 
     public class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println("Received a message in WEAR");
+            if (ACTION.equals(intent.getAction())) {
+                System.out.println("Received a message in WEAR");
 
-            // remove default message for empty notifcation history
-            removeEmptyNotifcationLLValues();
+                // remove default message for empty notifcation history
+                removeEmptyNotifcationLLValues();
 
-            Bundle data = intent.getBundleExtra("datamap");
-            DataMap dataMap = DataMap.fromBundle(data);
-            NotificationObject notificationObject = null;
+                Bundle data = intent.getBundleExtra("datamap");
+                DataMap dataMap = DataMap.fromBundle(data);
+                NotificationObject notificationObject = null;
 
-            System.out.println("Got DataMap");
+                System.out.println("Got DataMap");
+                System.out.println("package: " + dataMap.getString("package"));
+                System.out.println("title: " + dataMap.getString("title"));
+                System.out.println("text: " + dataMap.getString("text"));
 
-            System.out.println("package: "+ dataMap.getString("package"));
-            System.out.println("title: "+dataMap.getString("title"));
-            System.out.println("text: "+dataMap.getString("text"));
-            if (dataMap != null){
-                // create notification object from DataMap
-                notificationObject = new NotificationObject();
+                if (dataMap != null) {
+                    // create notification object from DataMap
+                    notificationObject = new NotificationObject();
 
-                if (dataMap.getString("package") != null) {
-                    notificationObject.setPack(dataMap.getString("package"));
+                    if (dataMap.getString("package") != null) {
+                        notificationObject.setPack(dataMap.getString("package"));
+                    }
+                    if (dataMap.getString("title") != null) {
+                        notificationObject.setTitle(dataMap.getString("title"));
+                    }
+                    if (dataMap.getString("text") != null) {
+                        notificationObject.setText(dataMap.getString("text"));
+                    }
+
+                    if (dataMap.getAsset("icon") != null) {
+                        System.out.println("icon not null, starting async task");
+                        getBitmapAsyncTask(context, dataMap, notificationObject);
+                    } else {
+                        System.out.println("Added notification to linked list WITHOUT ICON");
+                        notificationLL.add(notificationObject);
+                        // This is our list header
+                        updateUI();
+                    }
+
                 }
-                if (dataMap.getString("title") != null) {
-                    notificationObject.setTitle(dataMap.getString("title"));
-                }
-                if (dataMap.getString("text") != null) {
-                    notificationObject.setText(dataMap.getString("text"));
-                }
-
-                if (dataMap.getAsset("icon") != null) {
-                    Drawable drawableIcon = new BitmapDrawable(getResources(), getBitmapFromAsset((Asset) dataMap.get("icon")));
-                    notificationObject.setIcon(drawableIcon);
-                }
-                Log.i("WearMainActivity", "NotificationObject created");
+                System.out.println("Created NotificationObject");
             }
-
-            System.out.println("Created NotificationObject");
-
-            if (notificationObject != null){
-                notificationLL.add(notificationObject);
-            }
-
-            System.out.println("Added notification to linked list");
-
-            // This is our list header
-            updateUI();
         }
     }
 
@@ -156,16 +209,16 @@ public class WearMainActivity extends Activity {
         mHeader = (TextView) findViewById(R.id.wearable_listview_header);
         WearableListView wearableListView =
                 (WearableListView) findViewById(R.id.wearable_listview_container);
-        System.out.println("got first notification from linked list");
-        wearableListView.setAdapter(new WearableAdapter(this, notificationLL));
-
+        System.out.println("got notification from linked list");
+        wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
         wearableListView.setClickListener(mClickListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
         System.out.println("Set adapter for view");
+
     }
 
     public void removeEmptyNotifcationLLValues(){
-        if (!notificationLL.isEmpty() || notificationLL != null) {
+        if (!notificationLL.isEmpty() && notificationLL != null) {
             NotificationObject notification = notificationLL.get(0);
             if (notification.getTitle().equals(getResources().getString(R.string.notification_default_value))) {
                 notificationLL.remove(0);
@@ -173,28 +226,47 @@ public class WearMainActivity extends Activity {
         }
     }
 
-    private Bitmap getBitmapFromAsset(Asset asset) {
-        if (asset == null) {
-            throw new IllegalArgumentException("Asset must be non-null");
-        }
+    public void getBitmapAsyncTask(final Context context, final DataMap map, final NotificationObject notification) {
+        new AsyncTask<NotificationObject, Void, NotificationObject>() {
+            @Override
+            protected NotificationObject doInBackground(NotificationObject... notification) {
+                System.out.println("1");
+                GoogleApiClient googleApiClient = new GoogleApiClient.Builder(context)
+                        .addApi(Wearable.API)
+                        .build();
+                ConnectionResult result =
+                        googleApiClient.blockingConnect(
+                                TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                if (!result.isSuccess()) {
+                    notification[0].setIcon(null); // could handle incorrectly
+                    return notification[0];
+                }
+                System.out.println("2");
+                // convert asset into a file descriptor and block until it's ready
+                InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
+                        googleApiClient, map.getAsset("icon")).await().getInputStream();
+                googleApiClient.disconnect();
 
-        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(getApplicationContext()).addApi(Wearable.API).build();
-        ConnectionResult result = mGoogleApiClient.blockingConnect(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        if (!result.isSuccess()){
-            return null;
-        }
+                if (assetInputStream == null) {
+                    Log.w("AsyncTask", "Requested an unknown Asset.");
+                    return null;
+                }
+                System.out.println("3");
+                // decode the stream into a bitmap
+                Bitmap bitmap = BitmapFactory.decodeStream(assetInputStream);
+                Bitmap bMapScaled = Bitmap.createScaledBitmap(bitmap, 48, 48, true);
+                notification[0].setIcon(bMapScaled);
+                return notification[0];
+            }
 
-        // convert asset into a file descriptor and block until it is ready
-        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
-                mGoogleApiClient, asset).await().getInputStream();
-        mGoogleApiClient.disconnect();
-
-        if (assetInputStream == null) {
-            Log.w("NotificationObject", "Requested an unknown assset");
-            return null;
-        }
-        // decode the stream into a bitmap
-        return BitmapFactory.decodeStream(assetInputStream);
+            @Override
+            protected void onPostExecute(NotificationObject notification) {
+                super.onPostExecute(notification);
+                notificationLL.add(notification);
+                System.out.println("updating UI from ASYNCTASK");
+                updateUI();
+            }
+        }.execute(notification);
     }
 
     // Handle our Wearable List's click events
@@ -206,6 +278,10 @@ public class WearMainActivity extends Activity {
                             String.format("You selected item #%s",
                                     viewHolder.getLayoutPosition() + 1),
                             Toast.LENGTH_SHORT).show();
+                    Intent counterIntent = new Intent();
+                    counterIntent.setAction(ACTIONCOUNTER);
+                    counterIntent.putExtra("counter", 0);
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(counterIntent);
                 }
 
                 @Override

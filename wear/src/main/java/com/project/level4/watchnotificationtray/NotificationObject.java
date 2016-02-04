@@ -2,27 +2,23 @@ package com.project.level4.watchnotificationtray;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
-import android.util.Log;
-
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.Wearable;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
  * Created by Rob on 08/01/2016.
  */
-public class NotificationObject implements Serializable {
+public class NotificationObject implements Serializable{
+
     private static final long serialVersionUID = 1L;
     private String pack;
     private String title;
     private String text;
-    private Drawable icon;
+    private Bitmap icon;
 
 
     public NotificationObject() {
@@ -34,19 +30,19 @@ public class NotificationObject implements Serializable {
 
     }
 
-    public String getPackageName(){
+    public String getPackageName() {
         return this.pack;
     }
 
-    public String getTitle(){
+    public String getTitle() {
         return this.title;
     }
 
-    public String getText(){
+    public String getText() {
         return this.text;
     }
 
-    public Drawable getIcon(){
+    public Bitmap getIcon() {
         return this.icon;
     }
 
@@ -62,9 +58,47 @@ public class NotificationObject implements Serializable {
         this.text = text;
     }
 
-    public void setIcon(Drawable icon) {
+    public void setIcon(Bitmap icon) {
         this.icon = icon;
     }
 
+
+    protected class BitmapDataObject implements Serializable {
+        private static final long serialVersionUID = 111696345129311948L;
+        public byte[] imageByteArray;
+    }
+
+    /**
+     * Included for serialization - write this layer to the output stream.
+     */
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeObject(pack);
+        out.writeObject(title);
+        out.writeObject(text);
+        if (icon != null) {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            icon.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            BitmapDataObject bitmapDataObject = new BitmapDataObject();
+            bitmapDataObject.imageByteArray = stream.toByteArray();
+
+            out.writeObject(bitmapDataObject);
+        }
+    }
+
+    /**
+     * Included for serialization - read this object from the supplied input stream.
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        pack = (String) in.readObject();
+        title = (String) in.readObject();
+        text = (String) in.readObject();
+
+        BitmapDataObject bitmapDataObject = (BitmapDataObject) in.readObject();
+        if (bitmapDataObject != null) {
+            icon = BitmapFactory.decodeByteArray(bitmapDataObject.imageByteArray, 0, bitmapDataObject.imageByteArray.length);
+        } else {
+            icon = null;
+        }
+    }
 }
 

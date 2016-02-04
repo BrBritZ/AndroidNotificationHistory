@@ -6,4 +6,6 @@
 
     <string name="notifications_title">Notification History</string>
     <string name="notification_default_value">Empty</string>
+
+    <string name="filename">notifications.ser</string>
 </resources>
