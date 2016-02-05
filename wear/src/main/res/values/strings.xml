@@ -5,7 +5,7 @@
     <string name="my_analog_name">My Analog</string>
 
     <string name="notifications_title">Notification History</string>
-    <string name="notification_default_value">Empty</string>
+    <string name="notification_default_value">LIMIT</string>
 
     <string name="filename">notifications.ser</string>
 </resources>

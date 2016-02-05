@@ -11,9 +11,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#434343"
-        android:stackFromBottom="true"
-        android:transcriptMode="normal"
         app:layout_box="left|bottom|right">
+
+
+        <TextView
+            android:id="@+id/wearable_listview_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:paddingTop="24dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center_horizontal"
+            android:textSize="16sp"
+            android:text="@string/notifications_title">
+        </TextView>
 
         <android.support.wearable.view.WearableListView
             android:id="@+id/wearable_listview_container"
@@ -23,21 +35,8 @@
             android:layout_alignParentTop="true"
             android:dividerHeight="0dp"
             android:scrollbars="none"
-            android:stackFromBottom="true"
-            android:transcriptMode="normal">
+            android:layout_below="@id/wearable_listview_header">
         </android.support.wearable.view.WearableListView>
-
-        <TextView
-            android:id="@+id/wearable_listview_header"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:paddingTop="24dp"
-            android:fontFamily="sans-serif-light"
-            android:gravity="center_horizontal"
-            android:textSize="16sp"
-            android:text="@string/notifications_title"/>
 
     </RelativeLayout>
 </android.support.wearable.view.BoxInsetLayout>

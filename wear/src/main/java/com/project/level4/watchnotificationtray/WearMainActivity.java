@@ -23,6 +23,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.Wearable;
 
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -42,7 +43,7 @@ public class WearMainActivity extends Activity {
 
     private MessageReceiver messageReceiver;
     private LinkedList<NotificationObject> notificationLL;
-    private long counter;
+    private int limit = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +59,11 @@ public class WearMainActivity extends Activity {
         } else {
             NotificationObject defaultObject = new NotificationObject();
             defaultObject.setTitle(getResources().getString(R.string.notification_default_value));
-            notificationLL.add(defaultObject);
+            notificationLL.addFirst(defaultObject);
             mHeader = (TextView) findViewById(R.id.wearable_listview_header);
             WearableListView wearableListView =
                     (WearableListView) findViewById(R.id.wearable_listview_container);
+
             System.out.println("setting up default view");
             wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
             wearableListView.setOverScrollMode(0);
@@ -110,14 +112,12 @@ public class WearMainActivity extends Activity {
         FileOutputStream fileOut = null;
         String fileName = getResources().getString(R.string.filename);
         try {
-
             fileOut = getApplicationContext().openFileOutput(
                     fileName, Context.MODE_PRIVATE);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(notificationLL);
             out.close();
             fileOut.close();
-
         } catch (IOException i) {
             i.printStackTrace();
         }
@@ -131,11 +131,11 @@ public class WearMainActivity extends Activity {
             fileIn = getApplicationContext().openFileInput(fileName);
             ObjectInputStream is = new ObjectInputStream(fileIn);
             temp = (LinkedList<NotificationObject>)is.readObject();
-
             if (temp != null){
                 notificationLL = temp;
             }
             is.close();
+            System.out.println(notificationLL.size());
         }
         catch (FileNotFoundException e) {
             Log.e("ReadingFile","File not found");
@@ -173,6 +173,7 @@ public class WearMainActivity extends Activity {
                 System.out.println("package: " + dataMap.getString("package"));
                 System.out.println("title: " + dataMap.getString("title"));
                 System.out.println("text: " + dataMap.getString("text"));
+                System.out.println("limit: " + dataMap.getString("limit"));
 
                 if (dataMap != null) {
                     // create notification object from DataMap
@@ -188,27 +189,22 @@ public class WearMainActivity extends Activity {
                         notificationObject.setText(dataMap.getString("text"));
                     }
 
+                    if (dataMap.getString("limit") != null) {
+                        limit = Integer.valueOf(dataMap.getString("limit"));
+                    }
+
                     if (dataMap.getAsset("icon") != null) {
                         System.out.println("icon not null, starting async task");
                         getBitmapAsyncTask(context, dataMap, notificationObject);
                     } else {
                         System.out.println("Added notification to linked list WITHOUT ICON");
-                        notificationLL.add(notificationObject);
+                        notificationLL.addFirst(notificationObject);
                         // This is our list header
                         updateUI();
                     }
 
                 }
                 System.out.println("Created NotificationObject");
-            }
-        }
-    }
-
-    public class CounterReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (ACTIONCOUNTER.equals(intent.getAction())) {
-                counter = intent.getLongExtra("counter", 0);
             }
         }
     }
@@ -220,6 +216,13 @@ public class WearMainActivity extends Activity {
         WearableListView wearableListView =
                 (WearableListView) findViewById(R.id.wearable_listview_container);
         System.out.println("got notification from linked list");
+
+        if (limit != 0 && limit < notificationLL.size()){
+            for (int i=limit; i<notificationLL.size(); i++){
+                notificationLL.remove(i);
+            }
+        }
+
         wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
         wearableListView.setOverScrollMode(0);
         wearableListView.setOverScrollListener(mOverScrollListener);
@@ -273,12 +276,13 @@ public class WearMainActivity extends Activity {
             @Override
             protected void onPostExecute(NotificationObject notification) {
                 super.onPostExecute(notification);
-                notificationLL.add(notification);
+                notificationLL.addFirst(notification);
                 System.out.println("updating UI from ASYNCTASK");
                 updateUI();
             }
         }.execute(notification);
     }
+
 
     private WearableListView.OnOverScrollListener mOverScrollListener =
             new  WearableListView.OnOverScrollListener() {
@@ -317,8 +321,8 @@ public class WearMainActivity extends Activity {
 
                 @Override
                 public void onCentralPositionChanged(int i) {
-                    // Placeholder
-                }
-            };
 
+                }
+
+            };
 }

@@ -18,12 +18,12 @@ public class WearableNotificationService extends WearableListenerService {
     private static final String WEARABLE_DATA_PATH = "/wearable_data";
     private static final String ACTION = "NOTIFICATION";
     private static final String ACTIONCOUNTER = "COUNTER";
+    private long counter = 0;
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         System.out.println("datamap update..");
         DataMap dataMap;
-        long counter = 0;
         for (DataEvent event : dataEvents) {
             // Check the data type
             if (event.getType() == DataEvent.TYPE_CHANGED) {

@@ -1,5 +1,6 @@
 package com.project.level4.watchnotificationtray;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,6 +10,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
@@ -47,7 +50,6 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment {
@@ -72,7 +74,6 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
@@ -136,12 +137,6 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
         public void onReceive(Context context, Intent intent) {
             System.out.println("Received notification broadcast in MainActivity");
 
-
-//        if (intent.getStringExtra("command").equals("clearall")) {
-//           cancelAllNotifications();
-//        }
-
-
             String pack = intent.getStringExtra("package");
             String title = intent.getStringExtra("title");
             String text = intent.getStringExtra("text");
@@ -152,12 +147,17 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
                 icon  = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
             }
 
+            String limitKey = getApplicationContext().getResources().getString(R.string.notification_limit);
+            SharedPreferences sharedPreferences = getSharedPreferences("pref_key_notification_settings",MODE_PRIVATE);
+            String limit = sharedPreferences.getString(limitKey, "10");
+
 
             // Create a DataMap object and send it to the data layer
             DataMap dataMap = new DataMap();
             dataMap.putString("package", pack);
             dataMap.putString("title", title);
             dataMap.putString("text", text);
+            dataMap.putString("limit", limit);
             if (icon != null) {
                 Asset asset = createAssetFromBitmap(icon);
                 dataMap.putAsset("icon", asset);

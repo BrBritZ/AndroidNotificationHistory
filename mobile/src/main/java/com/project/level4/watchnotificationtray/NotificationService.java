@@ -3,6 +3,7 @@ package com.project.level4.watchnotificationtray;
 import android.app.Notification;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -20,7 +22,6 @@ import java.io.ByteArrayOutputStream;
  * Created by Rob on 28/01/2016.
  */
 public class NotificationService extends NotificationListenerService {
-    private String TAG = this.getClass().getSimpleName();
     private NotificationReceiver notificationReceiver;
 
     @Override
@@ -45,8 +46,7 @@ public class NotificationService extends NotificationListenerService {
 
        String pack = sbn.getPackageName();
        Notification notification = sbn.getNotification();
-       //       String ticker = sbn.getNotification().tickerText.toString();
-       Bundle extras = sbn.getNotification().extras;
+       Bundle extras = notification.extras;
        String title = extras.getString("android.title");
        String text = extras.getCharSequence("android.text").toString();
        Bitmap icon = null;

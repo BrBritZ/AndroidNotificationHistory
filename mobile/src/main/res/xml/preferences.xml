@@ -7,7 +7,7 @@
             android:defaultValue="10"
             android:entries="@array/max_notification_list_entries"
             android:entryValues="@array/max_notification_list_values"
-            android:key="pref_list"
+            android:key="@string/notification_limit"
             android:summary="@string/notification_limit_summary"
             android:title="@string/notification_limit_title">
         </ListPreference>
