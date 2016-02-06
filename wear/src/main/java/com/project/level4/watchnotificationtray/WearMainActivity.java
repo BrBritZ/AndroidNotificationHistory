@@ -54,21 +54,8 @@ public class WearMainActivity extends Activity {
 
         readNotificationsFromInternalStorage();
 
-        if (!notificationLL.isEmpty()){
+        if (!notificationLL.isEmpty()) {
             updateUI();
-        } else {
-            NotificationObject defaultObject = new NotificationObject();
-            defaultObject.setTitle(getResources().getString(R.string.notification_default_value));
-            notificationLL.addFirst(defaultObject);
-            mHeader = (TextView) findViewById(R.id.wearable_listview_header);
-            WearableListView wearableListView =
-                    (WearableListView) findViewById(R.id.wearable_listview_container);
-
-            System.out.println("setting up default view");
-            wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
-            wearableListView.setOverScrollMode(0);
-            wearableListView.setOverScrollListener(mOverScrollListener);
-            wearableListView.addOnScrollListener(mOnScrollListener);
         }
 
         // Register the local broadcast receiver
@@ -163,7 +150,7 @@ public class WearMainActivity extends Activity {
                 System.out.println("Received a message in WEAR");
 
                 // remove default message for empty notifcation history
-                removeEmptyNotifcationLLValues();
+//                removeEmptyNotifcationLLValues();
 
                 Bundle data = intent.getBundleExtra("datamap");
                 DataMap dataMap = DataMap.fromBundle(data);
@@ -231,14 +218,14 @@ public class WearMainActivity extends Activity {
 
     }
 
-    public void removeEmptyNotifcationLLValues(){
-        if (!notificationLL.isEmpty() && notificationLL != null) {
-            NotificationObject notification = notificationLL.get(0);
-            if (notification.getTitle().equals(getResources().getString(R.string.notification_default_value))) {
-                notificationLL.remove(0);
-            }
-        }
-    }
+//    public void removeEmptyNotifcationLLValues(){
+//        if (!notificationLL.isEmpty() && notificationLL != null) {
+//            NotificationObject notification = notificationLL.get(0);
+//            if (notification.getTitle().equals(getResources().getString(R.string.notification_default_value))) {
+//                notificationLL.remove(0);
+//            }
+//        }
+//    }
 
     public void getBitmapAsyncTask(final Context context, final DataMap map, final NotificationObject notification) {
         new AsyncTask<NotificationObject, Void, NotificationObject>() {
