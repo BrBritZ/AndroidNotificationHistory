@@ -211,6 +211,7 @@ public class WearMainActivity extends Activity {
         }
 
         wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
+        wearableListView.setClickListener(mClickListener);
         wearableListView.setOverScrollMode(0);
         wearableListView.setOverScrollListener(mOverScrollListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
@@ -269,6 +270,27 @@ public class WearMainActivity extends Activity {
             }
         }.execute(notification);
     }
+
+    // Handle our Wearable List's click events
+    private WearableListView.ClickListener mClickListener =
+            new WearableListView.ClickListener() {
+                @Override
+                public void onClick(WearableListView.ViewHolder viewHolder) {
+                    String title = notificationLL.get(viewHolder.getLayoutPosition()).getTitle();
+                    String text = notificationLL.get(viewHolder.getLayoutPosition()).getText();
+                    Intent notificationIntent = new Intent(getApplicationContext(), WearNotificationActivity.class);
+                    if (title != null) {
+                        notificationIntent.putExtra("title", title);
+                    }
+                    if (text != null) {
+                        notificationIntent.putExtra("text", text);
+                    }
+                    startActivity(notificationIntent);
+                }
+
+                @Override
+                public void onTopEmptyRegionClick() {}
+            };
 
 
     private WearableListView.OnOverScrollListener mOverScrollListener =

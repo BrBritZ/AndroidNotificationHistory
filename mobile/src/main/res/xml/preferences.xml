@@ -11,5 +11,6 @@
             android:summary="@string/notification_limit_summary"
             android:title="@string/notification_limit_title">
         </ListPreference>
+
     </PreferenceCategory>
 </PreferenceScreen>
