@@ -22,22 +22,15 @@ import java.io.ByteArrayOutputStream;
  * Created by Rob on 28/01/2016.
  */
 public class NotificationService extends NotificationListenerService {
-    private NotificationReceiver notificationReceiver;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        notificationReceiver = new NotificationReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("com.project.level4.watchnotificationtray.NOTIFICATION");
-        registerReceiver(notificationReceiver, filter);
-
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(notificationReceiver);
     }
 
    @Override

@@ -129,9 +129,7 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
     public void onConnectionFailed(ConnectionResult connectionResult) {
     }
 
-    /*
-    * NotificationReceiver
-    * */
+
     public class NotificationReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
