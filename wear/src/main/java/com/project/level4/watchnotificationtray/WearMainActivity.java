@@ -39,6 +39,7 @@ public class WearMainActivity extends WearBaseActivity {
     private static final int TIMEOUT_MS = 1000;
     private static final String ACTION = "NOTIFICATION";
     private static final String ACTIONCOUNTER = "COUNTER";
+    private static final String ACTIONPULL = "PULLREQUEST";
 
     private MessageReceiver messageReceiver;
     private LinkedList<NotificationObject> notificationLL;
@@ -56,6 +57,10 @@ public class WearMainActivity extends WearBaseActivity {
         if (!notificationLL.isEmpty()) {
             updateUI();
         }
+
+        // Retrieve any notifications that were received when
+        // activity was not running
+        broadcastPullRequest();
 
         // Register the local broadcast receiver
         IntentFilter messageFilter = new IntentFilter(ACTION);
@@ -125,20 +130,30 @@ public class WearMainActivity extends WearBaseActivity {
         }
         catch (FileNotFoundException e) {
             Log.e("ReadingFile","File not found");
+            e.printStackTrace();
         }
         catch (StreamCorruptedException e) {
+            Log.e("ReadingFile","File corrupted");
             e.printStackTrace();
 
         }
         catch (IOException e) {
+            Log.e("ReadingFile","IO exception");
             e.printStackTrace();
 
         }
         catch (ClassNotFoundException e) {
+            Log.e("ReadingFile","Object could not be c");
             e.printStackTrace();
 
         }
 
+    }
+
+    public void broadcastPullRequest(){
+        Intent counterIntent = new Intent();
+        counterIntent.setAction(ACTIONPULL);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(counterIntent);
     }
 
 
@@ -214,6 +229,7 @@ public class WearMainActivity extends WearBaseActivity {
         wearableListView.setOverScrollMode(0);
         wearableListView.setOverScrollListener(mOverScrollListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
+        wearableListView.resetLayoutManager();
         System.out.println("Set adapter for view");
 
     }

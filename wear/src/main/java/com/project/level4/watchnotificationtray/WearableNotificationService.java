@@ -1,6 +1,10 @@
 package com.project.level4.watchnotificationtray;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.gms.wearable.DataEvent;
@@ -20,8 +24,18 @@ public class WearableNotificationService extends WearableListenerService {
     private static final String WEARABLE_DATA_PATH = "/wearable_data";
     private static final String ACTION = "NOTIFICATION";
     private static final String ACTIONCOUNTER = "COUNTER";
+    private static final String ACTIONPULL = "PULLREQUEST";
     private long counter = 0;
     private static LinkedList<DataMap> unsentMaps = new LinkedList<DataMap>();
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        // Register the local broadcast receiver
+        IntentFilter messageFilter = new IntentFilter(ACTIONPULL);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mPullReceiver, messageFilter);
+    }
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
@@ -37,19 +51,14 @@ public class WearableNotificationService extends WearableListenerService {
                     counter++;
                     // Broadcast DataMap contents to wearable activity for display
                     // The content has the package name, title, text, and bitmap.
-                    System.out.println("IS ACTIVE? " + WearMainActivity.active);
-                    if (!WearMainActivity.active){
-                        unsentMaps.add(dataMap);
-                        System.out.println("UNREAD SIZE: " + unsentMaps.size());
-                    } if (WearMainActivity.active) {
+                    unsentMaps.add(dataMap);
+                    if (WearMainActivity.active) {
                         for (int i = 0; i < unsentMaps.size(); i++) {
                             broadcastDataMap(unsentMaps.get(i));
                             System.out.println("Broadcasting map: " + i);
                         }
-                        unsentMaps = new LinkedList<DataMap>();
+                        resetMapList();
                     }
-
-                    broadcastDataMap(dataMap);
                     broadcastCounter();
                 }
             }
@@ -69,5 +78,21 @@ public class WearableNotificationService extends WearableListenerService {
         counterIntent.putExtra("counter", counter);
         LocalBroadcastManager.getInstance(this).sendBroadcast(counterIntent);
     }
+
+    public void resetMapList(){
+        unsentMaps = new LinkedList<DataMap>();
+    }
+
+    final BroadcastReceiver mPullReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ACTIONPULL.equals(intent.getAction())) {
+                for (int i=0; i<unsentMaps.size(); i++){
+                    broadcastDataMap(unsentMaps.get(i));
+                }
+                resetMapList();
+            }
+        }
+    };
 }
 
