@@ -4,7 +4,6 @@ package com.project.level4.watchnotificationtray;
  * Created by Rob on 20/12/2015.
  */
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,7 +34,7 @@ import java.io.StreamCorruptedException;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
-public class WearMainActivity extends Activity {
+public class WearMainActivity extends WearBaseActivity {
     private TextView mHeader;
     private static final int TIMEOUT_MS = 1000;
     private static final String ACTION = "NOTIFICATION";
@@ -66,22 +65,22 @@ public class WearMainActivity extends Activity {
     }
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         writeNotificationsToInternalStorage();
 
         // unregister receiver
@@ -91,7 +90,7 @@ public class WearMainActivity extends Activity {
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
     }
 
@@ -218,15 +217,6 @@ public class WearMainActivity extends Activity {
         System.out.println("Set adapter for view");
 
     }
-
-//    public void removeEmptyNotifcationLLValues(){
-//        if (!notificationLL.isEmpty() && notificationLL != null) {
-//            NotificationObject notification = notificationLL.get(0);
-//            if (notification.getTitle().equals(getResources().getString(R.string.notification_default_value))) {
-//                notificationLL.remove(0);
-//            }
-//        }
-//    }
 
     public void getBitmapAsyncTask(final Context context, final DataMap map, final NotificationObject notification) {
         new AsyncTask<NotificationObject, Void, NotificationObject>() {

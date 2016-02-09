@@ -104,7 +104,12 @@ public class CustomWatchFace extends CanvasWatchFaceService {
             new AsyncTask<Intent, Void, Void>() {
                 @Override
                 protected Void doInBackground(Intent... intent) {
-                    counter = intent[0].getLongExtra("counter", 0);
+                    if (intent[0].getLongExtra("counter", 0) == 0){
+                        counter = 0;
+                    } else {
+                        counter = counter + intent[0].getLongExtra("counter", 0);
+                    }
+
                     return null;
                 }
             }.execute(intent);
@@ -149,7 +154,7 @@ public class CustomWatchFace extends CanvasWatchFaceService {
             mTickPaint.setAntiAlias(true);
 
             notificationPaint = new Paint();
-            notificationPaint.setColor(Color.RED);
+            notificationPaint.setColor(Color.BLACK);
             notificationPaint.setStrokeWidth(6.f);
             notificationPaint.setAntiAlias(true);
             notificationPaint.setTextSize(29);
