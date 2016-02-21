@@ -131,7 +131,6 @@ public class WearMainActivity extends WearBaseActivity {
                 notificationLL = temp;
             }
             is.close();
-            System.out.println(notificationLL.size());
         }
         catch (FileNotFoundException e) {
             Log.e("ReadingFile","File not found");
