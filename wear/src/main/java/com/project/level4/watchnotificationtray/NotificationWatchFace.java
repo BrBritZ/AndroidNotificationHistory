@@ -189,7 +189,6 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
         @Override
         public void onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
-            unregisterReceiver(notificationReceiver);
             super.onDestroy();
         }
 
