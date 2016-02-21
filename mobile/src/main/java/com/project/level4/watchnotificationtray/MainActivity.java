@@ -1,22 +1,28 @@
 package com.project.level4.watchnotificationtray;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.preference.DialogPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
+import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,29 +39,58 @@ import java.io.ByteArrayOutputStream;
 public class MainActivity extends PreferenceActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
-    GoogleApiClient googleClient;
-    private NotificationReceiver notificationreceiver;
+    private GoogleApiClient googleClient;
+    private NotificationReceiver notificationReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+        PreferenceManager.setDefaultValues(this, getResources().getString(R.string.shared_pref_key),
+                Context.MODE_PRIVATE, R.xml.preferences, false);
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 
         googleClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+        notificationReceiver = new NotificationReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.project.level4.watchnotificationtray.NOTIFICATION");
+        registerReceiver(notificationReceiver, filter);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        System.out.println("the key is: " + key);
+        String limit = sharedPreferences.getString(key, "10");
+
+        DataMap dataMap = new DataMap();
+        dataMap.putString("package", "com.project.level4.watchnotificationtray");
+        dataMap.putString("title", "Settings");
+        dataMap.putString("text", "Notification History limit set to " + limit);
+        dataMap.putString("limit", limit);
+
+        System.out.println("created DataMap for sharedPreferences");
+
+        String WEARABLE_DATA_PATH = "/wearable_data";
+
+        //Requires a new thread to avoid blocking the UI
+        new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
+        System.out.println("sent new sharedpreferences");
+
     }
+
 
     public static class MyPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            PreferenceManager.setDefaultValues(getActivity(),
+                    R.xml.preferences, false);
             addPreferencesFromResource(R.xml.preferences);
         }
     }
@@ -92,11 +127,6 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
     @Override
     protected void onResume() {
         super.onResume();
-
-        notificationreceiver = new NotificationReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("com.project.level4.watchnotificationtray.NOTIFICATION");
-        registerReceiver(notificationreceiver, filter);
     }
 
     // Send a data object when the data layer connection is successful.
@@ -117,7 +147,7 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(notificationreceiver);
+        unregisterReceiver(notificationReceiver);
     }
 
     // Placeholders for required connection callbacks
@@ -145,17 +175,11 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
                 icon  = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
             }
 
-            String limitKey = getApplicationContext().getResources().getString(R.string.notification_limit);
-            SharedPreferences sharedPreferences = getSharedPreferences("pref_key_notification_settings",MODE_PRIVATE);
-            String limit = sharedPreferences.getString(limitKey, "10");
-
-
             // Create a DataMap object and send it to the data layer
             DataMap dataMap = new DataMap();
             dataMap.putString("package", pack);
             dataMap.putString("title", title);
             dataMap.putString("text", text);
-            dataMap.putString("limit", limit);
             if (icon != null) {
                 Asset asset = createAssetFromBitmap(icon);
                 dataMap.putAsset("icon", asset);

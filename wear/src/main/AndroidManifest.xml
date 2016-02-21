@@ -12,7 +12,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault" >
+        android:theme="@android:style/Theme.Black" >
         <activity
             android:name=".WearMainActivity"
             android:label="@string/app_name"
@@ -30,7 +30,7 @@
         </activity>
 
         <service
-            android:name=".CustomWatchFace"
+            android:name=".NotificationWatchFace"
             android:label="@string/my_analog_name"
             android:permission="android.permission.BIND_WALLPAPER" >
             <meta-data

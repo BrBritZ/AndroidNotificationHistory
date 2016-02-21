@@ -5,7 +5,7 @@ import android.app.Activity;
 /**
  * Created by Rob on 09/02/2016.
  */
-public class WearBaseActivity extends Activity {
+public abstract class WearBaseActivity extends Activity {
     static boolean active = false;
 
     @Override

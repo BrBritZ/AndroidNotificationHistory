@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/frame_layout2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,6 +32,8 @@
             android:layout_alignParentBottom="true"
             android:paddingTop="16sp"
             android:scrollbars="none"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
             android:layout_below="@id/textViewNotificationTitle">
 
             <TextView

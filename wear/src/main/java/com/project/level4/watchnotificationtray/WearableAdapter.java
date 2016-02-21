@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WearableListView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,8 +37,6 @@ public class WearableAdapter extends WearableListView.Adapter {
 
     @Override
     public void onBindViewHolder(WearableListView.ViewHolder viewHolder, int position) {
-        System.out.println("trying to onBindViewHolder");
-        System.out.println("size: " + notificationLL.size());
         if (position < notificationLL.size()) {
             if (!notificationLL.isEmpty() && notificationLL != null) {
                 NotificationObject notification = notificationLL.get(position);
@@ -47,7 +46,7 @@ public class WearableAdapter extends WearableListView.Adapter {
                     Drawable icon = new BitmapDrawable(context.getResources(), notification.getIcon());
                     circledView.setImageDrawable(icon);
                 } else{
-                    circledView.setImageResource(R.drawable.ic_action_mail);
+                    circledView.setImageResource(R.drawable.ic_settings);
                 }
                 TextView textView = itemViewHolder.mItemTextView;
                 if (notification.getTitle() != null){
@@ -56,7 +55,7 @@ public class WearableAdapter extends WearableListView.Adapter {
                     } else {
                         textView.setText(notification.getTitle());
                     }
-                } else {
+                } else if (notification.getText() != null) {
                     if (notification.getText().length() > 15) {
                         textView.setText(notification.getText().substring(0, Math.min(notification.getText().length(), 15)) + "...");
                     } else {
@@ -64,7 +63,7 @@ public class WearableAdapter extends WearableListView.Adapter {
                     }
                 }
                 itemViewHolder.itemView.setTag(position);
-                System.out.println("Successfuly set onBindViewHolder");
+                Log.i("WearableAdapter","Successfuly set onBindViewHolder");
             }
         }
     }

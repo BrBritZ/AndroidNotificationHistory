@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -39,7 +40,7 @@ public class WearableNotificationService extends WearableListenerService {
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
-        System.out.println("datamap update..");
+        Log.i("WearableNotifService","datamap update..");
         DataMap dataMap;
         for (DataEvent event : dataEvents) {
             // Check the data type
@@ -55,7 +56,7 @@ public class WearableNotificationService extends WearableListenerService {
                     if (WearMainActivity.active) {
                         for (int i = 0; i < unsentMaps.size(); i++) {
                             broadcastDataMap(unsentMaps.get(i));
-                            System.out.println("Broadcasting map: " + i);
+                            Log.i("WearableNotifService","Broadcasting map: " + i);
                         }
                         resetMapList();
                     }
@@ -83,6 +84,7 @@ public class WearableNotificationService extends WearableListenerService {
         unsentMaps = new LinkedList<DataMap>();
     }
 
+    // when WearMainActivity starts, broadcast unsent DataMaps
     final BroadcastReceiver mPullReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

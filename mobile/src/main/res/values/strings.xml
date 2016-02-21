@@ -4,8 +4,14 @@
     <string name="notification_limit_title">Notification Limit</string>
     <string name="max">Max Limit</string>
     <string name="notification_limit_summary">Sets the maximum number of notifications that the SmartWatch notification history will hold</string>
-    <string name="notifications">Notifications</string>
+    <string name="notification_settings_screen_title">Settings</string>
     <string name="notification_service">NotificationServiceListener</string>
     <string name="notification_receiver">NotificationBroadcastReceiver</string>
-    <string name="notification_limit">LIMITKEY</string>
+    <string name="notification_limit_key">LIMITKEY</string>
+    <string name="delete_key">DELETEKEY</string>
+    <string name="delete_title">Delete Notification History?</string>
+    <string name="delete_pos">OK</string>
+    <string name="delete_neg">Cancel</string>
+    <string name="shared_pref_key">"pref_key_notification_settings"</string>
+
 </resources>

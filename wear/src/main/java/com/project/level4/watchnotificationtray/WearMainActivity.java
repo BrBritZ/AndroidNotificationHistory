@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -41,14 +42,18 @@ public class WearMainActivity extends WearBaseActivity {
     private static final String ACTIONCOUNTER = "COUNTER";
     private static final String ACTIONPULL = "PULLREQUEST";
 
-    private MessageReceiver messageReceiver;
+    private NotificationReceiver notificationReceiver;
     private LinkedList<NotificationObject> notificationLL;
-    private int limit = 0;
+    private int limit = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.i("WearMainActivity", "starting application...");
+
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        limit = Integer.parseInt(sharedPref.getString(getResources().getString(R.string.limit_key), "10"));
 
         notificationLL = new LinkedList<NotificationObject>();
 
@@ -64,8 +69,8 @@ public class WearMainActivity extends WearBaseActivity {
 
         // Register the local broadcast receiver
         IntentFilter messageFilter = new IntentFilter(ACTION);
-        messageReceiver = new MessageReceiver();
-        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
+        notificationReceiver = new NotificationReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(notificationReceiver, messageFilter);
 
     }
 
@@ -89,7 +94,7 @@ public class WearMainActivity extends WearBaseActivity {
         writeNotificationsToInternalStorage();
 
         // unregister receiver
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(notificationReceiver);
 
         super.onDestroy();
     }
@@ -157,26 +162,19 @@ public class WearMainActivity extends WearBaseActivity {
     }
 
 
-    public class MessageReceiver extends BroadcastReceiver {
+    public class NotificationReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (ACTION.equals(intent.getAction())) {
-                System.out.println("Received a message in WEAR");
+                Log.i("NotificationReceiver", "Received a message in WEAR");
 
-                // remove default message for empty notifcation history
-//                removeEmptyNotifcationLLValues();
-
+                // get DataMap from bundle
                 Bundle data = intent.getBundleExtra("datamap");
                 DataMap dataMap = DataMap.fromBundle(data);
-                NotificationObject notificationObject = null;
-
-                System.out.println("Got DataMap");
-                System.out.println("package: " + dataMap.getString("package"));
-                System.out.println("title: " + dataMap.getString("title"));
-                System.out.println("text: " + dataMap.getString("text"));
-                System.out.println("limit: " + dataMap.getString("limit"));
 
                 if (dataMap != null) {
+                    // initialise notification object
+                    NotificationObject notificationObject = null;
                     // create notification object from DataMap
                     notificationObject = new NotificationObject();
 
@@ -190,17 +188,23 @@ public class WearMainActivity extends WearBaseActivity {
                         notificationObject.setText(dataMap.getString("text"));
                     }
 
-                    if (dataMap.getString("limit") != null) {
-                        limit = Integer.valueOf(dataMap.getString("limit"));
-                    }
-
+                    // check settings update
+                     if (dataMap.getString("limit") != null) {
+                         String sLimit = dataMap.getString("limit");
+                         limit = Integer.parseInt(sLimit);
+                         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                         SharedPreferences.Editor editor = sharedPref.edit();
+                         editor.putString(getResources().getString(R.string.limit_key), Integer.toString(limit));
+                         editor.commit();
+                     }
                     if (dataMap.getAsset("icon") != null) {
-                        System.out.println("icon not null, starting async task");
+                        // use async task to get bitmap from DataMap
                         getBitmapAsyncTask(context, dataMap, notificationObject);
                     } else {
-                        System.out.println("Added notification to linked list WITHOUT ICON");
+                        // set notification bitmap as drawable from resources
+                        Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_settings);
+                        notificationObject.setIcon(icon);
                         notificationLL.addFirst(notificationObject);
-                        // This is our list header
                         updateUI();
                     }
 
@@ -212,17 +216,10 @@ public class WearMainActivity extends WearBaseActivity {
 
 
     private void updateUI(){
-        System.out.println("Updating User Interface!");
+        applyLimit();
         mHeader = (TextView) findViewById(R.id.wearable_listview_header);
         WearableListView wearableListView =
                 (WearableListView) findViewById(R.id.wearable_listview_container);
-        System.out.println("got notification from linked list");
-
-        if (limit != 0 && limit < notificationLL.size()){
-            for (int i=limit; i<notificationLL.size(); i++){
-                notificationLL.remove(i);
-            }
-        }
 
         wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
         wearableListView.setClickListener(mClickListener);
@@ -230,15 +227,12 @@ public class WearMainActivity extends WearBaseActivity {
         wearableListView.setOverScrollListener(mOverScrollListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
         wearableListView.resetLayoutManager();
-        System.out.println("Set adapter for view");
-
     }
 
     public void getBitmapAsyncTask(final Context context, final DataMap map, final NotificationObject notification) {
         new AsyncTask<NotificationObject, Void, NotificationObject>() {
             @Override
             protected NotificationObject doInBackground(NotificationObject... notification) {
-                System.out.println("1");
                 GoogleApiClient googleApiClient = new GoogleApiClient.Builder(context)
                         .addApi(Wearable.API)
                         .build();
@@ -249,17 +243,17 @@ public class WearMainActivity extends WearBaseActivity {
                     notification[0].setIcon(null); // could handle incorrectly
                     return notification[0];
                 }
-                System.out.println("2");
+
                 // convert asset into a file descriptor and block until it's ready
                 InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
                         googleApiClient, map.getAsset("icon")).await().getInputStream();
                 googleApiClient.disconnect();
 
                 if (assetInputStream == null) {
-                    Log.w("AsyncTask", "Requested an unknown Asset.");
+                    Log.w("AsyncTask", "Requested an unknown Asset");
                     return null;
                 }
-                System.out.println("3");
+
                 // decode the stream into a bitmap
                 Bitmap bitmap = BitmapFactory.decodeStream(assetInputStream);
                 Bitmap bMapScaled = Bitmap.createScaledBitmap(bitmap, 48, 48, true);
@@ -270,11 +264,17 @@ public class WearMainActivity extends WearBaseActivity {
             @Override
             protected void onPostExecute(NotificationObject notification) {
                 super.onPostExecute(notification);
+                // add notification and update UI
                 notificationLL.addFirst(notification);
-                System.out.println("updating UI from ASYNCTASK");
                 updateUI();
             }
         }.execute(notification);
+    }
+
+    private void applyLimit(){
+       while(limit < notificationLL.size()){
+            notificationLL.removeLast();
+        }
     }
 
     // Handle our Wearable List's click events

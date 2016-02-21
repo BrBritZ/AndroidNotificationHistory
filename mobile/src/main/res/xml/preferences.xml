@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:key="pref_key_notification_settings"
-        android:title="@string/notifications">
-        <ListPreference
+        android:key="@string/shared_pref_key"
+        android:title="@string/notification_settings_screen_title">
+        <EditTextPreference
             android:defaultValue="10"
-            android:entries="@array/max_notification_list_entries"
-            android:entryValues="@array/max_notification_list_values"
-            android:key="@string/notification_limit"
-            android:summary="@string/notification_limit_summary"
-            android:title="@string/notification_limit_title">
-        </ListPreference>
-
+            android:enabled="true"
+            android:key="@string/notification_limit_key"
+            android:numeric="integer"
+            android:title="@string/notification_limit_title"
+            android:summary="@string/notification_limit_summary">
+        </EditTextPreference>
     </PreferenceCategory>
 </PreferenceScreen>
