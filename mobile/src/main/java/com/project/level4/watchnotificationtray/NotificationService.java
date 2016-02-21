@@ -43,8 +43,6 @@ public class NotificationService extends NotificationListenerService {
 
    @Override
     public void onNotificationPosted(StatusBarNotification sbn){
-       System.out.println("Received a notification");
-
        String pack = sbn.getPackageName();
        Notification notification = sbn.getNotification();
        Bundle extras = notification.extras;
@@ -72,7 +70,8 @@ public class NotificationService extends NotificationListenerService {
            byte[] byteArray = byteStream.toByteArray();
            msgrcv.putExtra("iconByteArray", byteArray);
        }
-       System.out.println("Broadcasting...");
+
+       Log.i("NotificationService", "Broadcasting...");
        sendBroadcast(msgrcv);
    }
 }
