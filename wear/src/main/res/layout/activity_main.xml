@@ -5,23 +5,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent" >
 
     <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/frame_layout"
-        android:layout_height="match_parent"
+        android:layout_height="fill_parent"
         android:layout_width="match_parent"
         android:background="#434343"
         app:layout_box="left|bottom|right">
-
-        <android.support.wearable.view.WearableListView
-            android:id="@+id/wearable_listview_container"
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:scrollbars="none"
-            android:dividerHeight="0dp">
-        </android.support.wearable.view.WearableListView>
 
         <TextView
             android:id="@+id/wearable_listview_header"
@@ -35,6 +26,14 @@
             android:textSize="16sp"
             android:text="@string/notifications_title">
         </TextView>
+
+        <android.support.wearable.view.WearableListView
+            android:id="@+id/wearable_listview_container"
+            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:scrollbars="none"
+            android:dividerHeight="0dp">
+        </android.support.wearable.view.WearableListView>
 
     </RelativeLayout>
 </android.support.wearable.view.BoxInsetLayout>

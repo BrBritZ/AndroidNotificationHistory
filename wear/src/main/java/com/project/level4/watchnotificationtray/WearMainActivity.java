@@ -219,13 +219,13 @@ public class WearMainActivity extends WearBaseActivity {
         mHeader = (TextView) findViewById(R.id.wearable_listview_header);
         WearableListView wearableListView =
                 (WearableListView) findViewById(R.id.wearable_listview_container);
-
-        wearableListView.setAdapter(new WearableAdapter(getApplicationContext(), notificationLL));
+        WearableAdapter mAdapter = new WearableAdapter(getApplicationContext(), notificationLL);
+        mAdapter.notifyDataSetChanged();
+        wearableListView.setAdapter(mAdapter);
         wearableListView.setClickListener(mClickListener);
         wearableListView.setOverScrollMode(0);
         wearableListView.setOverScrollListener(mOverScrollListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
-        wearableListView.resetLayoutManager();
     }
 
     public void getBitmapAsyncTask(final Context context, final DataMap map, final NotificationObject notification) {

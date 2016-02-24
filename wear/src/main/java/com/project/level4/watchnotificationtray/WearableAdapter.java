@@ -42,12 +42,16 @@ public class WearableAdapter extends WearableListView.Adapter {
                 NotificationObject notification = notificationLL.get(position);
                 ItemViewHolder itemViewHolder = (ItemViewHolder) viewHolder;
                 CircledImageView circledView = itemViewHolder.mCircledImageView;
+
+                // check if notification has icon. If not, assign it one.
                 if (notification.getIcon() != null){
                     Drawable icon = new BitmapDrawable(context.getResources(), notification.getIcon());
                     circledView.setImageDrawable(icon);
                 } else{
                     circledView.setImageResource(R.drawable.ic_settings);
                 }
+
+                // set title for notification
                 TextView textView = itemViewHolder.mItemTextView;
                 if (notification.getTitle() != null){
                     if (notification.getTitle().length() > 15) {
@@ -62,6 +66,7 @@ public class WearableAdapter extends WearableListView.Adapter {
                         textView.setText(notification.getText());
                     }
                 }
+
                 itemViewHolder.itemView.setTag(position);
                 Log.i("WearableAdapter","Successfuly set onBindViewHolder");
             }
