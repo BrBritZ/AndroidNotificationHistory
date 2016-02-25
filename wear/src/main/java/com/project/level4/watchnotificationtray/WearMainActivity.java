@@ -196,6 +196,11 @@ public class WearMainActivity extends WearBaseActivity {
                          editor.putString(getResources().getString(R.string.limit_key), Integer.toString(limit));
                          editor.commit();
                      }
+
+                    if (dataMap.getString("delete") != null){
+                        notificationLL = new LinkedList<NotificationObject>();
+                        Log.i("NotificationReceiver", "Notifications deleted");
+                    }
                     if (dataMap.getAsset("icon") != null) {
                         // use async task to get bitmap from DataMap
                         getBitmapAsyncTask(context, dataMap, notificationObject);
