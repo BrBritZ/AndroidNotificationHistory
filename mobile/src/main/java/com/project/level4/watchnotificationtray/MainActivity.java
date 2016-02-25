@@ -1,11 +1,14 @@
 package com.project.level4.watchnotificationtray;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,7 +30,7 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment(), "PreferenceFragment").commit();
         PreferenceManager.setDefaultValues(this, getResources().getString(R.string.shared_pref_key),
                 Context.MODE_PRIVATE, R.xml.preferences, false);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
@@ -41,23 +44,23 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        System.out.println("the key is: " + key);
-        String limit = sharedPreferences.getString(key, "10");
+        if (key.equals(getResources().getString(R.string.notification_limit_key))) {
+            DataMap dataMap = new DataMap();
+            String limit = sharedPreferences.getString(key, "10");
 
-        DataMap dataMap = new DataMap();
-        dataMap.putString("package", "com.project.level4.watchnotificationtray");
-        dataMap.putString("title", "Settings");
-        dataMap.putString("text", "Notification History limit set to " + limit);
-        dataMap.putString("limit", limit);
+            dataMap.putString("package", "com.project.level4.watchnotificationtray");
+            dataMap.putString("title", "Settings");
+            dataMap.putString("text", "Notification History limit set to " + limit);
+            dataMap.putString("limit", limit);
 
-        System.out.println("created DataMap for sharedPreferences");
+            Log.i("MainActivity", "created DataMap for setting changes in sharedPreferences");
 
-        String WEARABLE_DATA_PATH = "/wearable_data";
+            String WEARABLE_DATA_PATH = "/wearable_data";
 
-        //Requires a new thread to avoid blocking the UI
-        new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
-        System.out.println("sent new sharedpreferences");
-
+            //Requires a new thread to avoid blocking the UI
+            new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
+            Log.i("MainActivity", "starting SendToDataLayerThread");
+        }
     }
 
 
@@ -68,7 +71,45 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
             PreferenceManager.setDefaultValues(getActivity(),
                     R.xml.preferences, false);
             addPreferencesFromResource(R.xml.preferences);
+
+            Preference delete = findPreference(getResources().getString(R.string.delete_key));
+            delete.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener(){
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle(getResources().getString(R.string.delete_dialog_title))
+                            .setMessage(getResources().getString(R.string.delete_dialog_text))
+                            .setPositiveButton(R.string.delete_pos, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    DataMap dataMap = new DataMap();
+                                    dataMap.putString("package", "com.project.level4.watchnotificationtray");
+                                    dataMap.putString("title", "Settings");
+                                    dataMap.putString("text", "Notification History cleared");
+                                    dataMap.putString("delete", Boolean.toString(true));
+                                    Log.i("MainActivity", "created DataMap for setting changes in sharedPreferences");
+
+                                    ((MainActivity)getActivity()).deleteNotifications(dataMap);
+                                }
+                            })
+                            .setNegativeButton(R.string.delete_neg, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // do nothing
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                    return false;
+                }
+            });
         }
+    }
+
+    public void deleteNotifications(DataMap dataMap){
+        String WEARABLE_DATA_PATH = "/wearable_data";
+
+        //Requires a new thread to avoid blocking the UI
+        new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
+
     }
 
     @Override
