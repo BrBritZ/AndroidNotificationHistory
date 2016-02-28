@@ -26,7 +26,7 @@ public class WearableNotificationService extends WearableListenerService {
     private static final String ACTION = "NOTIFICATION";
     private static final String ACTIONCOUNTER = "COUNTER";
     private static final String ACTIONPULL = "PULLREQUEST";
-    private long counter = 0;
+    private int counter = 0;
     private static LinkedList<DataMap> unsentMaps = new LinkedList<DataMap>();
 
     @Override

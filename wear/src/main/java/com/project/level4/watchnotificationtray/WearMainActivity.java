@@ -228,7 +228,7 @@ public class WearMainActivity extends WearBaseActivity {
         wearableListView.setAdapter(mAdapter);
         wearableListView.setClickListener(mClickListener);
         wearableListView.setOverScrollMode(0);
-        wearableListView.setOverScrollListener(mOverScrollListener);
+//        wearableListView.setOverScrollListener(mOverScrollListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
     }
 
@@ -302,18 +302,6 @@ public class WearMainActivity extends WearBaseActivity {
             };
 
 
-    private WearableListView.OnOverScrollListener mOverScrollListener =
-            new  WearableListView.OnOverScrollListener() {
-                @Override
-                public void onOverScroll() {
-                    Intent counterIntent = new Intent();
-                    counterIntent.setAction(ACTIONCOUNTER);
-                    counterIntent.putExtra("counter", 0);
-                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(counterIntent);
-                }
-            };
-
-
     // The following code ensures that the title scrolls as the user scrolls up
     // or down the list
     private WearableListView.OnScrollListener mOnScrollListener =
@@ -329,7 +317,13 @@ public class WearMainActivity extends WearBaseActivity {
 
                 @Override
                 public void onScroll(int i) {
-                    // Placeholder
+                    // If user scrolls past top, the notification counter is reset
+                    if (i < 0){
+                        Intent counterIntent = new Intent();
+                        counterIntent.setAction(ACTIONCOUNTER);
+                        counterIntent.putExtra("counter", 0);
+                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(counterIntent);
+                    }
                 }
 
                 @Override
@@ -339,7 +333,7 @@ public class WearMainActivity extends WearBaseActivity {
 
                 @Override
                 public void onCentralPositionChanged(int i) {
-
+                    // Placeholder
                 }
 
             };

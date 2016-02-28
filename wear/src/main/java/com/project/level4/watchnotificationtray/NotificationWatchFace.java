@@ -62,7 +62,7 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
     /**
      * Stores the number of unread notifications
      */
-    private long counter;
+    private int counter;
 
     private Time mTime;
 
@@ -109,10 +109,10 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
             new AsyncTask<Intent, Void, Void>() {
                 @Override
                 protected Void doInBackground(Intent... intent) {
-                    if (intent[0].getLongExtra("counter", 0) == 0){
+                    if (intent[0].getIntExtra("counter", 0) == 0){
                         counter = 0;
                     } else {
-                        counter = counter + intent[0].getLongExtra("counter", 0);
+                        counter = counter + intent[0].getIntExtra("counter", 0);
                     }
 
                     return null;
