@@ -224,8 +224,7 @@ public class WearMainActivity extends WearBaseActivity {
         mHeader = (TextView) findViewById(R.id.wearable_listview_header);
         WearableListView wearableListView =
                 (WearableListView) findViewById(R.id.wearable_listview_container);
-        WearableAdapter mAdapter = new WearableAdapter(getApplicationContext(), notificationLL);
-        mAdapter.notifyDataSetChanged();
+        WearableAdapter mAdapter = new WearableAdapter(this, notificationLL);
         wearableListView.setAdapter(mAdapter);
         wearableListView.setClickListener(mClickListener);
         wearableListView.setOverScrollMode(0);
