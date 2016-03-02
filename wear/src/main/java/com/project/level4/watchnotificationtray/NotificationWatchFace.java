@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -40,6 +41,7 @@ import android.text.format.Time;
 import android.view.SurfaceHolder;
 
 import java.lang.ref.WeakReference;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -275,15 +277,14 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
                 canvas.drawLine(centerX + innerX, centerY + innerY, centerX + outerX, centerY + outerY, mTickPaint);
             }
 
-
             long small = counter % 10;
             long big = counter / 10;
 
-
             String stringCounterSmall = String.valueOf(small);
             String stringCounterBig = String.valueOf(big);
-            canvas.drawText(stringCounterSmall,centerX+4, centerY+68f, notificationPaint);
-            canvas.drawText(stringCounterBig,centerX-10, centerY+68f, notificationPaint);
+            
+            canvas.drawText(stringCounterSmall,centerX+5, centerY+66f, notificationPaint);
+            canvas.drawText(stringCounterBig,centerX-9, centerY+66f, notificationPaint);
         }
 
         @Override

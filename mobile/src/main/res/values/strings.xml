@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WatchNotificationTray</string>
+    <string name="app_name">Notification History</string>
     <string name="action_settings">Settings</string>
     <string name="notification_limit_title">Notification Limit</string>
     <string name="max">Max Limit</string>

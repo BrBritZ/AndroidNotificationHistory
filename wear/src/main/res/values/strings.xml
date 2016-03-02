@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WatchNotificationTray</string>
+    <string name="app_name">Notification History</string>
     <string name="my_analog_name">Notification History</string>
 
     <string name="notifications_title">Notification History</string>

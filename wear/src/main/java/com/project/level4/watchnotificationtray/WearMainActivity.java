@@ -227,9 +227,8 @@ public class WearMainActivity extends WearBaseActivity {
         WearableAdapter mAdapter = new WearableAdapter(this, notificationLL);
         wearableListView.setAdapter(mAdapter);
         wearableListView.setClickListener(mClickListener);
-        wearableListView.setOverScrollMode(0);
-//        wearableListView.setOverScrollListener(mOverScrollListener);
         wearableListView.addOnScrollListener(mOnScrollListener);
+        wearableListView.setOverScrollMode(0);
     }
 
     public void getBitmapAsyncTask(final Context context, final DataMap map, final NotificationObject notification) {
