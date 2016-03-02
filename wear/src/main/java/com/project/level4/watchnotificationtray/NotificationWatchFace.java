@@ -282,7 +282,7 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
 
             String stringCounterSmall = String.valueOf(small);
             String stringCounterBig = String.valueOf(big);
-            
+
             canvas.drawText(stringCounterSmall,centerX+5, centerY+66f, notificationPaint);
             canvas.drawText(stringCounterBig,centerX-9, centerY+66f, notificationPaint);
         }
