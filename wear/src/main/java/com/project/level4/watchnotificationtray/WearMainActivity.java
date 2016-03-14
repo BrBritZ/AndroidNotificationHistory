@@ -82,6 +82,7 @@ public class WearMainActivity extends WearBaseActivity {
     @Override
     public void onResume() {
         super.onResume();
+        broadcastPullRequest();
     }
 
     @Override

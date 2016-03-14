@@ -36,6 +36,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.watchface.CanvasWatchFaceService;
+import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
@@ -84,6 +85,7 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
         private Bitmap mCustomBackground;
         private Bitmap mBackgroundScaledBitmap;
         private boolean mAmbient;
+        private Rect button;
 
         private static final String ACTION = "COUNTER";
 
@@ -129,8 +131,10 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
             setWatchFaceStyle(new WatchFaceStyle.Builder(NotificationWatchFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
+                    .setAcceptsTapEvents(true)
                     .setShowSystemUiTime(false)
                     .build());
+
 
             Resources resources = NotificationWatchFace.this.getResources();
 
@@ -283,8 +287,16 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
             String stringCounterSmall = String.valueOf(small);
             String stringCounterBig = String.valueOf(big);
 
-            canvas.drawText(stringCounterSmall,centerX+5, centerY+66f, notificationPaint);
-            canvas.drawText(stringCounterBig,centerX-9, centerY+66f, notificationPaint);
+            createButton(centerX, centerY+66f);
+
+            canvas.drawText(stringCounterSmall,centerX+5f, centerY+66f, notificationPaint);
+            canvas.drawText(stringCounterBig,centerX-9f, centerY+66f, notificationPaint);
+        }
+
+        // button positioned on notification counter.
+        // exceeds size of notification counter to make clicking easier.
+        public void createButton(float centerX, float centerY){
+            button = new Rect((int)(centerX-20f), (int)(centerY-15f), (int)(centerX+20f), (int)(centerY+15f));
         }
 
         @Override
@@ -332,6 +344,24 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
                 long delayMs = INTERACTIVE_UPDATE_RATE_MS
                         - (timeMs % INTERACTIVE_UPDATE_RATE_MS);
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
+            }
+        }
+
+        // if user taps notification counter, start application
+        @Override
+        public void onTapCommand(@TapType int tapType, int x, int y, long eventTime) {
+
+            switch (tapType) {
+                case WatchFaceService.TAP_TYPE_TAP:
+                    if (button.contains(x, y)) {
+                        Intent startAppIntent = new Intent(NotificationWatchFace.this, WearMainActivity.class);
+                        startAppIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(startAppIntent);
+                    }
+                    break;
+                default:
+                    super.onTapCommand(tapType, x, y, eventTime);
+                    break;
             }
         }
     }

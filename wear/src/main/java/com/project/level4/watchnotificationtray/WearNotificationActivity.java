@@ -12,7 +12,7 @@ import android.widget.TextView;
 /**
  * Created by Rob on 06/02/2016.
  */
-public class WearNotificationActivity extends Activity {
+public class WearNotificationActivity extends WearBaseActivity {
     private TextView mHeader;
     private TextView mBody;
     private String title = null;

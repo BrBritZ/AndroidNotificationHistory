@@ -49,18 +49,21 @@ public class WearableNotificationService extends WearableListenerService {
                 String path = event.getDataItem().getUri().getPath();
                 if (path.equals(WEARABLE_DATA_PATH)) {
                     dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
-                    if (counter < 99) {
-                        counter++;
-                    }
                     // Broadcast DataMap contents to wearable activity for display
                     // The content has the package name, title, text, and bitmap.
                     unsentMaps.add(dataMap);
-                    if (WearMainActivity.active) {
+                    if (WearMainActivity.active && !WearNotificationActivity.active) {
                         for (int i = 0; i < unsentMaps.size(); i++) {
                             broadcastDataMap(unsentMaps.get(i));
                             Log.i("WearableNotifService","Broadcasting map: " + i);
                         }
                         resetMapList();
+                    }
+                    if (counter < 99){
+                        counter++;
+                    } else {
+                        counter--;
+                        unsentMaps.removeFirst();
                     }
                     broadcastCounter();
                 }
