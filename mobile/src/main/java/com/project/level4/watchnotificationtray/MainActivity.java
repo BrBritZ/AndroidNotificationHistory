@@ -48,6 +48,9 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
             DataMap dataMap = new DataMap();
             String limit = sharedPreferences.getString(key, "10");
 
+            // validate limit, if limit is out of bounds, write valid limit back to sharedPreferences
+            limit = validateLimit(limit);
+
             dataMap.putString("package", "com.project.level4.watchnotificationtray");
             dataMap.putString("title", "Settings");
             dataMap.putString("text", "Notification History limit set to " + limit);
@@ -61,6 +64,24 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
             new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
             Log.i("MainActivity", "starting SendToDataLayerThread");
         }
+    }
+
+    public String validateLimit(String newValue){
+        try {
+            int limit = Integer.parseInt(newValue);
+            if (limit <= 100 && limit >= 10){
+                return newValue;
+            } else if (limit > 100){
+                newValue = "100";
+                return newValue;
+            } else if (limit < 10){
+                newValue = "10";
+                return newValue;
+            }
+        } catch (Exception e){
+            newValue = "10";
+        }
+        return newValue;
     }
 
 
