@@ -3,9 +3,9 @@ package com.project.level4.watchnotificationtray;
 /**
  * Created by Rob on 20/12/2015.
  */
+
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WearableListView;
 import android.util.AttributeSet;

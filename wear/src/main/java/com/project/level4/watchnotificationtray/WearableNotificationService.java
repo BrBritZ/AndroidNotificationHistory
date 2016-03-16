@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
+import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -33,14 +33,14 @@ public class WearableNotificationService extends WearableListenerService {
     public void onCreate() {
         super.onCreate();
 
-        // Register the local broadcast receiver
-        IntentFilter messageFilter = new IntentFilter(ACTIONPULL);
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mPullReceiver, messageFilter);
+        // Register the local broadcast receiver for pulling DataMaps
+        IntentFilter messageFilterPull = new IntentFilter(ACTIONPULL);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mPullReceiver, messageFilterPull);
     }
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
-        Log.i("WearableNotifService","datamap update..");
+        Log.i("WearableNotifService", "datamap update..");
         DataMap dataMap;
         for (DataEvent event : dataEvents) {
             // Check the data type
@@ -59,16 +59,24 @@ public class WearableNotificationService extends WearableListenerService {
                         }
                         resetMapList();
                     }
-                    if (counter < 99){
-                        counter++;
-                    } else {
-                        counter--;
+                    if (unsentMaps.size() > getLimit()){
                         unsentMaps.removeFirst();
                     }
-                    broadcastCounter();
+                    if (dataMap.getString("delete") != null){
+                        broadcastCounter();
+                    } else {
+                        counter++;
+                        broadcastCounter();
+                    }
                 }
             }
         }
+    }
+
+    public int getLimit(){
+        SharedPreferences sharedPref = MyApplication.preferences;
+        int limit = Integer.parseInt(sharedPref.getString(getResources().getString(R.string.limit_key), "10"));
+        return limit;
     }
 
     public void broadcastDataMap(DataMap dataMap){

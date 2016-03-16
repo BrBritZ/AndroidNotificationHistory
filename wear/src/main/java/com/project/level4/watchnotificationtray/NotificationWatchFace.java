@@ -20,14 +20,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetManager;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -42,7 +41,6 @@ import android.text.format.Time;
 import android.view.SurfaceHolder;
 
 import java.lang.ref.WeakReference;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -109,6 +107,7 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
             }
         };
 
+
         public void updateCounterTask(Intent intent) {
             new AsyncTask<Intent, Void, Void>() {
                 @Override
@@ -117,11 +116,21 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
                         counter = 0;
                     } else {
                         counter = counter + intent[0].getIntExtra("counter", 0);
+                        int limit = getLimit();
+                        if (counter > getLimit()){
+                            counter = limit;
+                        }
                     }
-
                     return null;
                 }
             }.execute(intent);
+        }
+
+
+        public int getLimit(){
+            SharedPreferences sharedPref = MyApplication.preferences;
+            int limit = Integer.parseInt(sharedPref.getString(getResources().getString(R.string.limit_key), "10"));
+            return limit;
         }
 
         @Override
@@ -175,9 +184,9 @@ public class NotificationWatchFace extends CanvasWatchFaceService {
 
             mTime = new Time();
 
-            // Register the local broadcast receiver
-            IntentFilter messageFilter = new IntentFilter(ACTION);
-            LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(notificationReceiver, messageFilter);
+            // Register the local broadcast receiver for updating counter
+            IntentFilter messageFilterCounter = new IntentFilter(ACTION);
+            LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(notificationReceiver, messageFilterCounter);
         }
 
         @Override

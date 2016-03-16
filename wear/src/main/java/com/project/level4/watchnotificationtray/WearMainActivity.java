@@ -4,6 +4,7 @@ package com.project.level4.watchnotificationtray;
  * Created by Rob on 20/12/2015.
  */
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +24,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.Wearable;
 
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -35,12 +35,13 @@ import java.io.StreamCorruptedException;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
-public class WearMainActivity extends WearBaseActivity {
+public class WearMainActivity extends Activity {
     private TextView mHeader;
     private static final int TIMEOUT_MS = 1000;
     private static final String ACTION = "NOTIFICATION";
     private static final String ACTIONCOUNTER = "COUNTER";
     private static final String ACTIONPULL = "PULLREQUEST";
+    static boolean active = false;
 
     private NotificationReceiver notificationReceiver;
     private LinkedList<NotificationObject> notificationLL;
@@ -52,9 +53,8 @@ public class WearMainActivity extends WearBaseActivity {
         setContentView(R.layout.activity_main);
         Log.i("WearMainActivity", "starting application...");
 
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = MyApplication.preferences;
         limit = Integer.parseInt(sharedPref.getString(getResources().getString(R.string.limit_key), "10"));
-
         notificationLL = new LinkedList<NotificationObject>();
 
         readNotificationsFromInternalStorage();
@@ -82,12 +82,14 @@ public class WearMainActivity extends WearBaseActivity {
     @Override
     public void onResume() {
         super.onResume();
+        active = true;
         broadcastPullRequest();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        active = false;
     }
 
     @Override
@@ -156,11 +158,10 @@ public class WearMainActivity extends WearBaseActivity {
     }
 
     public void broadcastPullRequest(){
-        Intent counterIntent = new Intent();
-        counterIntent.setAction(ACTIONPULL);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(counterIntent);
+        Intent pullIntent = new Intent();
+        pullIntent.setAction(ACTIONPULL);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(pullIntent);
     }
-
 
     public class NotificationReceiver extends BroadcastReceiver {
         @Override
@@ -192,7 +193,7 @@ public class WearMainActivity extends WearBaseActivity {
                      if (dataMap.getString("limit") != null) {
                          String sLimit = dataMap.getString("limit");
                          limit = Integer.parseInt(sLimit);
-                         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                         SharedPreferences sharedPref = MyApplication.preferences;
                          SharedPreferences.Editor editor = sharedPref.edit();
                          editor.putString(getResources().getString(R.string.limit_key), Integer.toString(limit));
                          editor.commit();
@@ -214,7 +215,7 @@ public class WearMainActivity extends WearBaseActivity {
                     }
 
                 }
-                System.out.println("Created NotificationObject");
+                Log.i("WearMainActivity","Created NotificationObject");
             }
         }
     }

@@ -2,21 +2,17 @@ package com.project.level4.watchnotificationtray;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.wearable.view.WearableListView;
-import android.view.DragEvent;
-import android.view.View;
-import android.view.ViewTreeObserver;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 /**
  * Created by Rob on 06/02/2016.
  */
-public class WearNotificationActivity extends WearBaseActivity {
+public class WearNotificationActivity extends Activity {
     private TextView mHeader;
     private TextView mBody;
     private String title = null;
     private String text = null;
+    static boolean active = false;
 
 
     @Override
@@ -52,11 +48,13 @@ public class WearNotificationActivity extends WearBaseActivity {
     @Override
     public void onResume() {
         super.onResume();
+        active = true;
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        active = false;
     }
 
     @Override
