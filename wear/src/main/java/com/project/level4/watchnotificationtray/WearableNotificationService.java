@@ -91,6 +91,7 @@ public class WearableNotificationService extends WearableListenerService {
         counterIntent.setAction(ACTIONCOUNTER);
         counterIntent.putExtra("counter", counter);
         LocalBroadcastManager.getInstance(this).sendBroadcast(counterIntent);
+        counter = 0;
     }
 
     public void resetMapList(){
