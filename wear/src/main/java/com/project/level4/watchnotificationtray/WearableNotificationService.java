@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -19,6 +18,12 @@ import java.util.LinkedList;
 
 /**
  * Created by Rob on 11/01/2016.
+ */
+
+/**
+ * Service which runs to receive DataMaps from mobile.
+ * - updates NotificationWatchFace counter
+ * - updates list of notifications (dependant on limit size)
  */
 public class WearableNotificationService extends WearableListenerService {
 
@@ -40,7 +45,7 @@ public class WearableNotificationService extends WearableListenerService {
 
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
-        Log.i("WearableNotifService", "datamap update..");
+//        Log.i("WearableNotifService", "datamap update..");
         DataMap dataMap;
         for (DataEvent event : dataEvents) {
             // Check the data type
@@ -55,7 +60,7 @@ public class WearableNotificationService extends WearableListenerService {
                     if (WearMainActivity.active && !WearNotificationActivity.active) {
                         for (int i = 0; i < unsentMaps.size(); i++) {
                             broadcastDataMap(unsentMaps.get(i));
-                            Log.i("WearableNotifService","Broadcasting map: " + i);
+//                            Log.i("WearableNotifService","Broadcasting map: " + i);
                         }
                         resetMapList();
                     }

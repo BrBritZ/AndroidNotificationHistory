@@ -9,7 +9,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -19,7 +18,10 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.Wearable;
 
 ;
-
+/**
+ * MainActivity is responsible for preference fragment (Settings screen), and sending changes made to
+ * the wearable companion app
+ */
 
 public class MainActivity extends PreferenceActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -56,13 +58,13 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
             dataMap.putString("text", "Notification History limit set to " + limit);
             dataMap.putString("limit", limit);
 
-            Log.i("MainActivity", "created DataMap for setting changes in sharedPreferences");
+//            Log.i("MainActivity", "created DataMap for setting changes in sharedPreferences");
 
             String WEARABLE_DATA_PATH = "/wearable_data";
 
             //Requires a new thread to avoid blocking the UI
             new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
-            Log.i("MainActivity", "starting SendToDataLayerThread");
+//            Log.i("MainActivity", "starting SendToDataLayerThread");
         }
     }
 
@@ -107,7 +109,7 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
                                     dataMap.putString("title", "Settings");
                                     dataMap.putString("text", "Notification History cleared");
                                     dataMap.putString("delete", Boolean.toString(true));
-                                    Log.i("MainActivity", "created DataMap for setting changes in sharedPreferences");
+//                                    Log.i("MainActivity", "created DataMap for setting changes in sharedPreferences");
 
                                     ((MainActivity)getActivity()).deleteNotifications(dataMap);
                                 }
@@ -170,7 +172,7 @@ public class MainActivity extends PreferenceActivity implements GoogleApiClient.
     // Send a data object when the data layer connection is successful.
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.i("MainActivity", "GoogleApiClient connected");
+//        Log.i("MainActivity", "GoogleApiClient connected");
     }
 
     // Disconnect from the data layer when the Activity stops

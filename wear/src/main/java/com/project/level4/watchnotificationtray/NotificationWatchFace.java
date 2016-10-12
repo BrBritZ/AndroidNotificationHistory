@@ -45,6 +45,11 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Unique watch face for app used "NotificationHistoryWatchFace", used to display analog time and
+ * number of unread notifications.n (Not necessary for simple notification app)
+ */
+
+/**
  * Analog watch face with a ticking second hand. In ambient mode, the second hand isn't shown. On
  * devices with low-bit ambient mode, the hands are drawn without anti-aliasing in ambient mode.
  */

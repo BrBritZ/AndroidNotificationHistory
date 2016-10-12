@@ -4,12 +4,16 @@ package com.project.level4.watchnotificationtray;
  * Created by Rob on 20/12/2015.
  */
 
+/**
+ * Adapter used to display each individual notification icon, title and text in Notification History
+ * List
+ */
+
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WearableListView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,7 +72,7 @@ public class WearableAdapter extends WearableListView.Adapter {
                 }
 
                 itemViewHolder.itemView.setTag(position);
-                Log.i("WearableAdapter","Successfuly set onBindViewHolder");
+//                Log.i("WearableAdapter","Successfuly set onBindViewHolder");
             }
         }
     }

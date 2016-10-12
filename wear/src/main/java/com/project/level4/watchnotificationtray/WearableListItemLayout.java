@@ -4,6 +4,11 @@ package com.project.level4.watchnotificationtray;
  * Created by Rob on 20/12/2015.
  */
 
+/**
+ * Class used to display Notification icon in list. Increases and decreases in size dependant on if
+ * highlighted.
+ */
+
 import android.content.Context;
 import android.graphics.Color;
 import android.support.wearable.view.CircledImageView;

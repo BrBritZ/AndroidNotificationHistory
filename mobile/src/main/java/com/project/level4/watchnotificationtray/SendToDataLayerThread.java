@@ -1,7 +1,5 @@
 package com.project.level4.watchnotificationtray;
 
-import android.util.Log;
-
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataMap;
@@ -11,6 +9,10 @@ import com.google.android.gms.wearable.Wearable;
 
 /**
  * Created by Rob on 28/01/2016.
+ */
+
+/**
+ * Thread responsible to sending DataMap to wearable
  */
 class SendToDataLayerThread extends Thread {
     String path;
@@ -32,11 +34,11 @@ class SendToDataLayerThread extends Thread {
         PutDataRequest request = putDMR.asPutDataRequest();
         DataApi.DataItemResult result = Wearable.DataApi.putDataItem(mGoogleApiClient, request).await();
         if (result.getStatus().isSuccess()) {
-            Log.v("SendToDataLayerThread", "DataMap: " + dataMap + " sent successfully to data layer ");
+//            Log.v("SendToDataLayerThread", "DataMap: " + dataMap + " sent successfully to data layer ");
         }
         else {
             // Log an error
-            Log.v("SendToDataLayerThread", "ERROR: failed to send DataMap to data layer");
+//            Log.v("SendToDataLayerThread", "ERROR: failed to send DataMap to data layer");
         }
     }
 }

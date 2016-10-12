@@ -4,6 +4,11 @@ package com.project.level4.watchnotificationtray;
  * Created by Rob on 20/12/2015.
  */
 
+/**
+ * Gets DataMaps, saves them to memory, and uses WearableAdapter to build Notification History
+ * List
+ */
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,7 +21,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WearableListView;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -51,7 +55,7 @@ public class WearMainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.i("WearMainActivity", "starting application...");
+//        Log.i("WearMainActivity", "starting application...");
 
         SharedPreferences sharedPref = MyApplication.preferences;
         limit = Integer.parseInt(sharedPref.getString(getResources().getString(R.string.limit_key), "10"));
@@ -136,21 +140,21 @@ public class WearMainActivity extends Activity {
             is.close();
         }
         catch (FileNotFoundException e) {
-            Log.e("ReadingFile","File not found");
+//            Log.e("ReadingFile","File not found");
             e.printStackTrace();
         }
         catch (StreamCorruptedException e) {
-            Log.e("ReadingFile","File corrupted");
+//            Log.e("ReadingFile","File corrupted");
             e.printStackTrace();
 
         }
         catch (IOException e) {
-            Log.e("ReadingFile","IO exception");
+//            Log.e("ReadingFile","IO exception");
             e.printStackTrace();
 
         }
         catch (ClassNotFoundException e) {
-            Log.e("ReadingFile","Object could not be c");
+//            Log.e("ReadingFile","Object could not be c");
             e.printStackTrace();
 
         }
@@ -167,7 +171,7 @@ public class WearMainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (ACTION.equals(intent.getAction())) {
-                Log.i("NotificationReceiver", "Received a message in WEAR");
+//                Log.i("NotificationReceiver", "Received a message in WEAR");
 
                 // get DataMap from bundle
                 Bundle data = intent.getBundleExtra("datamap");
@@ -201,7 +205,7 @@ public class WearMainActivity extends Activity {
 
                     if (dataMap.getString("delete") != null){
                         notificationLL = new LinkedList<NotificationObject>();
-                        Log.i("NotificationReceiver", "Notifications deleted");
+//                        Log.i("NotificationReceiver", "Notifications deleted");
                     }
                     if (dataMap.getAsset("icon") != null) {
                         // use async task to get bitmap from DataMap
@@ -215,7 +219,7 @@ public class WearMainActivity extends Activity {
                     }
 
                 }
-                Log.i("WearMainActivity","Created NotificationObject");
+//                Log.i("WearMainActivity","Created NotificationObject");
             }
         }
     }
@@ -254,7 +258,7 @@ public class WearMainActivity extends Activity {
                 googleApiClient.disconnect();
 
                 if (assetInputStream == null) {
-                    Log.w("AsyncTask", "Requested an unknown Asset");
+//                    Log.w("AsyncTask", "Requested an unknown Asset");
                     return null;
                 }
 

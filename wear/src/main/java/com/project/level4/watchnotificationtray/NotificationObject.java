@@ -12,6 +12,10 @@ import java.io.Serializable;
 /**
  * Created by Rob on 08/01/2016.
  */
+
+/**
+ * Class used to store each Notification metadata from DataMap to ease readability and handling issueså
+ */
 public class NotificationObject implements Serializable{
 
     private static final long serialVersionUID = 1L;

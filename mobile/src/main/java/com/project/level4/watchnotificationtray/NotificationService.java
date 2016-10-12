@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -21,6 +20,11 @@ import java.io.ByteArrayOutputStream;
 
 /**
  * Created by Rob on 28/01/2016.
+ */
+
+/**
+ * This service is always running. App does not have to be running in foreground for the service logic
+ * to function. Allows notifications to be sent to wearable without mobile appliction to be running in foreground
  */
 public class NotificationService extends NotificationListenerService implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
@@ -41,7 +45,7 @@ public class NotificationService extends NotificationListenerService implements 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i("LocalService", "Received start id " + startId + ": " + intent);
+//        Log.i("LocalService", "Received start id " + startId + ": " + intent);
         // We want this service to continue running until it is explicitly
         // stopped, so return sticky.
         return START_STICKY;
@@ -50,7 +54,7 @@ public class NotificationService extends NotificationListenerService implements 
     // Send a data object when the data layer connection is successful.
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.i("MainActivity", "GoogleApiClient connected");
+//        Log.i("MainActivity", "GoogleApiClient connected");
     }
 
 
@@ -71,6 +75,7 @@ public class NotificationService extends NotificationListenerService implements 
     public void onConnectionFailed(ConnectionResult connectionResult) {
     }
 
+    // packages notification data to be sent to the wearable as a DataMap
    @Override
     public void onNotificationPosted(StatusBarNotification sbn){
        String pack = sbn.getPackageName();
@@ -85,7 +90,7 @@ public class NotificationService extends NotificationListenerService implements 
        }
        catch (PackageManager.NameNotFoundException e)
        {
-           Log.w("OnNotificationPosted", "Cannot get icon from package");
+//           Log.w("OnNotificationPosted", "Cannot get icon from package");
        }
 
        // Create a DataMap object and send it to the data layer
@@ -98,7 +103,7 @@ public class NotificationService extends NotificationListenerService implements 
            dataMap.putAsset("icon", asset);
        }
 
-       Log.i("NotificationService","DataMap created successfully");
+//       Log.i("NotificationService","DataMap created successfully");
 
        String WEARABLE_DATA_PATH = "/wearable_data";
 
@@ -106,6 +111,7 @@ public class NotificationService extends NotificationListenerService implements 
        new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap, googleClient).start();
    }
 
+    // used to create Asset from Bitmap icon
     private Asset createAssetFromBitmap(Bitmap bitmap) {
         final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
